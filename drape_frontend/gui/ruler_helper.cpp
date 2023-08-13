@@ -3,7 +3,6 @@
 #include "drape_frontend/visual_params.hpp"
 
 #include "platform/measurement_utils.hpp"
-#include "platform/settings.hpp"
 
 #include "geometry/mercator.hpp"
 #include "geometry/screenbase.hpp"
@@ -35,7 +34,8 @@ struct UnitValue
   int m_i;
 };
 
-UnitValue g_arrFeets[] = {
+// TODO: Localize these strings.
+UnitValue constexpr g_arrFeets[] = {
   { "10 ft", 10 },
   { "20 ft", 20 },
   { "50 ft", 50 },
@@ -55,7 +55,7 @@ UnitValue g_arrFeets[] = {
   { "500 mi", 500 * 5280 }
 };
 
-UnitValue g_arrYards[] = {
+UnitValue constexpr g_arrYards[] = {
   { "50 yd", 50 },
   { "100 yd", 100 },
   { "200 yd", 200 },
@@ -75,7 +75,7 @@ UnitValue g_arrYards[] = {
 // TODO: fix ruler text to the current zoom level, i.e. make it 100m for z16 always
 // (ruler length will vary still). It'll make debugging and user support easier as
 // we'll be able to tell zoom level of a screenshot by looking at the ruler.
-UnitValue g_arrMeters[] = {
+UnitValue constexpr g_arrMeters[] = {
   { "1 m", 1 },
   { "2 m", 2 },
   { "5 m", 5 },
@@ -222,7 +222,7 @@ void RulerHelper::GetTextInitInfo(std::string & alphabet, uint32_t & size) const
 
 double RulerHelper::CalcMetersDiff(double value)
 {
-  UnitValue * arrU = g_arrMeters;
+  UnitValue const * arrU = g_arrMeters;
   int count = ARRAY_SIZE(g_arrMeters);
 
   auto conversionFn = &Identity;

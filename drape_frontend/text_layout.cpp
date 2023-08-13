@@ -291,16 +291,16 @@ double GetTextMinPeriod(double pixelTextLength)
 }
 }  // namespace
 
-void TextLayout::Init(strings::UniString const & text, float fontSize, bool isSdf,
-                      ref_ptr<dp::TextureManager> textures)
+void TextLayout::Init(strings::UniString && text, float fontSize, bool isSdf, ref_ptr<dp::TextureManager> textures)
 {
-  m_text = text;
-  float const fontScale = static_cast<float>(VisualParams::Instance().GetFontScale());
-  float const baseSize = static_cast<float>(VisualParams::Instance().GetGlyphBaseSize());
+  m_text = std::move(text);
+  auto const & vpi = VisualParams::Instance();
+  float const fontScale = static_cast<float>(vpi.GetFontScale());
+  float const baseSize = static_cast<float>(vpi.GetGlyphBaseSize());
   m_textSizeRatio = isSdf ? (fontSize * fontScale / baseSize) : 1.0f;
   m_fixedHeight = isSdf ? dp::GlyphManager::kDynamicGlyphSize
                         : static_cast<int>(fontSize * fontScale);
-  textures->GetGlyphRegions(text, m_fixedHeight, m_metrics);
+  textures->GetGlyphRegions(m_text, m_fixedHeight, m_metrics);
 }
 
 ref_ptr<dp::Texture> TextLayout::GetMaskTexture() const
@@ -357,7 +357,7 @@ StraightTextLayout::StraightTextLayout(strings::UniString const & text, float fo
   else
     delimIndexes.push_back(visibleText.size());
 
-  TBase::Init(visibleText, fontSize, isSdf, textures);
+  TBase::Init(std::move(visibleText), fontSize, isSdf, textures);
   CalculateOffsets(anchor, m_textSizeRatio, m_metrics, delimIndexes, m_offsets, m_pixelSize, m_rowsCount);
 }
 

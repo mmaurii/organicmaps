@@ -303,7 +303,7 @@ void TextureManager::GetGlyphsRegions(ref_ptr<FontTexture> tex, strings::UniStri
 
   std::vector<GlyphKey> keys;
   keys.reserve(text.size());
-  for (auto const & c : text)
+  for (auto const c : text)
     keys.emplace_back(c, fixedHeight);
 
   bool hasNew = false;

@@ -29,9 +29,7 @@ class TextLayout
 public:
   virtual ~TextLayout() {}
 
-  void Init(strings::UniString const & text,
-            float fontSize, bool isSdf,
-            ref_ptr<dp::TextureManager> textures);
+  void Init(strings::UniString && text, float fontSize, bool isSdf, ref_ptr<dp::TextureManager> textures);
 
   ref_ptr<dp::Texture> GetMaskTexture() const;
   uint32_t GetGlyphCount() const;

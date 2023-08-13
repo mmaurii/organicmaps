@@ -257,8 +257,8 @@ public:
     while (gindex)
       charcodes.push_back(FT_Get_Next_Char(m_fontFace, charcodes.back(), &gindex));
 
-    sort(charcodes.begin(), charcodes.end());
-    charcodes.erase(unique(charcodes.begin(), charcodes.end()), charcodes.end());
+    std::sort(charcodes.begin(), charcodes.end());
+    charcodes.erase(std::unique(charcodes.begin(), charcodes.end()), charcodes.end());
   }
 
   static unsigned long Read(FT_Stream stream, unsigned long offset, unsigned char * buffer, unsigned long count)
