@@ -203,22 +203,21 @@ public:
         imageHeight = std::round(img.GetHeight() * scale);
 
         data = SharedBufferManager::instance().reserveSharedBuffer(bitmap.rows * bitmap.pitch);
-        memcpy(data->data(), bitmap.buffer, data->size());
+        std::memcpy(data->data(), bitmap.buffer, data->size());
       }
       else
       {
-        int const border = kSdfBorder;
-        imageHeight += 2 * border;
-        imageWidth += 2 * border;
+        imageHeight += 2 * kSdfBorder;
+        imageWidth += 2 * kSdfBorder;
 
         data = SharedBufferManager::instance().reserveSharedBuffer(imageWidth * imageHeight);
         auto ptr = data->data();
-        memset(ptr, 0, data->size());
+        std::memset(ptr, 0, data->size());
 
-        for (size_t row = border; row < bitmap.rows + border; ++row)
+        for (size_t row = kSdfBorder; row < bitmap.rows + kSdfBorder; ++row)
         {
-          size_t const dstBaseIndex = row * imageWidth + border;
-          size_t const srcBaseIndex = (row - border) * bitmap.pitch;
+          size_t const dstBaseIndex = row * imageWidth + kSdfBorder;
+          size_t const srcBaseIndex = (row - kSdfBorder) * bitmap.pitch;
           for (int column = 0; column < bitmap.pitch; ++column)
             ptr[dstBaseIndex + column] = bitmap.buffer[srcBaseIndex + column];
         }
@@ -226,21 +225,13 @@ public:
     }
 
     GlyphManager::Glyph result;
-    result.m_image = GlyphManager::GlyphImage
-    {
-      imageWidth, imageHeight,
-      bitmap.rows, bitmap.pitch,
-      data
-    };
+    result.m_image = GlyphManager::GlyphImage{imageWidth, imageHeight, bitmap.rows, bitmap.pitch, data};
 
-    result.m_metrics = GlyphManager::GlyphMetrics
-    {
-      static_cast<float>(glyph->advance.x >> 16) * scale,
-      static_cast<float>(glyph->advance.y >> 16) * scale,
-      static_cast<float>(bbox.xMin) * scale,
-      static_cast<float>(bbox.yMin) * scale,
-      true
-    };
+    result.m_metrics = GlyphManager::GlyphMetrics{(glyph->advance.x >> 16) * scale,
+                                                  (glyph->advance.y >> 16) * scale,
+                                                  bbox.xMin * scale,
+                                                  bbox.yMin * scale,
+                                                  true};
 
     result.m_code = unicodePoint;
     result.m_fixedSize = isSdf ? GlyphManager::kDynamicGlyphSize
@@ -272,7 +263,7 @@ public:
     return count;
   }
 
-  static void Close(FT_Stream){}
+  static void Close(FT_Stream) {}
 
   void MarkGlyphReady(strings::UniChar code, int fixedHeight)
   {
