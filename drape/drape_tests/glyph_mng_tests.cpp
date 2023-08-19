@@ -22,7 +22,7 @@
 #include FT_FREETYPE_H
 #include <hb.h>
 
-#include "hb-ft.h"
+#include <hb-ft.h>
 
 namespace glyph_mng_tests
 {
@@ -51,6 +51,10 @@ public:
 
   void RenderGlyphs(QPaintDevice * device)
   {
+    QPainter painter(device);
+    painter.fillRect(QRectF(0.0, 0.0, device->width(), device->height()), Qt::white);
+    float constexpr ratio = 1.0;
+
     FT_Library library;
 
     // Initialize FreeType
@@ -59,24 +63,20 @@ public:
       return;
     }
 
-    QPainter painter(device);
-    painter.fillRect(QRectF(0.0, 0.0, device->width(), device->height()), Qt::white);
-    float constexpr ratio = 2.0;
-
     printf("HB code\n\n");
 
     hb_buffer_t *buf = hb_buffer_create();
     hb_buffer_add_utf8(buf, m_utf8.c_str(), m_utf8.size(), 0, m_utf8.size());
     //hb_buffer_add_codepoints(buf, m_toDraw.data(), m_toDraw.size(), 0, m_toDraw.size());
     // If you know the direction, script, and language
-//    hb_buffer_set_direction(buf, HB_DIRECTION_RTL);
-//    hb_buffer_set_script(buf, HB_SCRIPT_ARABIC);
-//    hb_buffer_set_language(buf, hb_language_from_string("ar", -1));
+    hb_buffer_set_direction(buf, HB_DIRECTION_RTL);
+    hb_buffer_set_script(buf, HB_SCRIPT_ARABIC);
+    hb_buffer_set_language(buf, hb_language_from_string("ar", -1));
 
     // If you don't know the direction, script, and language
-    hb_buffer_guess_segment_properties(buf);
+//    hb_buffer_guess_segment_properties(buf);
 
-    char const * fontFile = "/Users/alex/Downloads/NotoSansArabic-Regular.ttf";//"/Users/alex/Developer/omim/omim/data/00_NotoNaskhArabic-Regular.ttf";
+    char const * fontFile = "/Users/alex/Developer/omim/omim/data/00_NotoNaskhArabic-Regular.ttf";
 
     // Create a face and a font from a font file.
 //    hb_blob_t *blob = hb_blob_create_from_file(fontFile); /* or hb_blob_create_from_file_or_fail() */
@@ -100,25 +100,28 @@ public:
 
     // Load font
     if (FT_New_Face(library, fontFile, 0, &face)) {
-      std::cerr << "Can't load font " << fontFile << std::endl;
+      std::cerr << "Can't load font " << fontFile << '\n';
       return;
     }
 
-    long constexpr fontSize = 20;
+    long constexpr kFontSize = 60;
 
     // Set character size
-    if (FT_Set_Char_Size(face, fontSize, fontSize, 0, 0)) {
-      std::cerr << "Can't set character size" << std::endl;
-      return;
-    }
+//    if (FT_Set_Char_Size(face, kFontSize << 6, kFontSize << 6, 0, 0)) {
+//      std::cerr << "Can't set character size\n";
+//      return;
+//    }
+    FT_Set_Pixel_Sizes(
+        face,   /* handle to face object */
+        0,      /* pixel_width           */
+        kFontSize );   /* pixel_height          */
+
 
     // Set no transform (identity)
-    FT_Set_Transform(face, nullptr, nullptr);
+    //FT_Set_Transform(face, nullptr, nullptr);
 
     // Load font into HarfBuzz
-    hb_font_t *font = hb_ft_font_create(face, 0);
-
-
+    hb_font_t *font = hb_ft_font_create(face, nullptr);
 
     // Shape!
     hb_shape(font, buf, nullptr, 0);
@@ -128,52 +131,50 @@ public:
     hb_glyph_info_t *glyph_info    = hb_buffer_get_glyph_infos(buf, &glyph_count);
     hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
 
-    //std::vector<dp::GlyphManager::Glyph> hbGlyphs;
+    // Iterate over each glyph.
+//    hb_position_t cursor_x = 0;
+//    hb_position_t cursor_y = 0;
+
     QPoint hbPen(100, 100);
 
-
-    // Iterate over each glyph.
-    hb_position_t cursor_x = 0;
-    hb_position_t cursor_y = 0;
     for (unsigned int i = 0; i < glyph_count; i++) {
       hb_codepoint_t const glyphid = glyph_info[i].codepoint;
-      hb_position_t const x_offset  = glyph_pos[i].x_offset;
-      hb_position_t const y_offset  = glyph_pos[i].y_offset;
-      hb_position_t const x_advance = glyph_pos[i].x_advance;
-      hb_position_t const y_advance = glyph_pos[i].y_advance;
 
-      printf("%X\n", glyphid);
+      printf("Glyph ID: %X\n", glyphid);
 
-      dp::GlyphManager::Glyph gOrig = m_mng->GetGlyph(glyphid, fontSize);//dp::GlyphManager::kDynamicGlyphSize);
-      gOrig.m_metrics.m_xOffset = x_offset;
-      gOrig.m_metrics.m_yOffset = y_offset;
-      gOrig.m_metrics.m_xAdvance = x_advance;
-      gOrig.m_metrics.m_yAdvance = y_advance;
-      auto g = dp::GlyphManager::GenerateGlyph(gOrig, m_mng->GetSdfScale());
-      g.m_metrics.m_xOffset = x_offset;
-      g.m_metrics.m_yOffset = y_offset;
-      g.m_metrics.m_xAdvance = x_advance;
-      g.m_metrics.m_yAdvance = y_advance;
-      gOrig.m_image.Destroy();
-      uint8_t * d = SharedBufferManager::GetRawPointer(g.m_image.m_data);
+      FT_Int32 const flags =  FT_LOAD_RENDER;
+      FT_Load_Glyph(face, glyphid, flags);
+
+      FT_GlyphSlot slot = face->glyph;
+//      FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL);
+
+      FT_Bitmap const ftBitmap = slot->bitmap;
+
+      auto buffer = ftBitmap.buffer;
+      auto width = ftBitmap.width;
+      auto height = ftBitmap.rows;
+      auto bearing_x = slot->metrics.horiBearingX;//slot->bitmap_left;
+      auto bearing_y = slot->metrics.horiBearingY;//slot->bitmap_top;
+
+      hb_position_t const x_offset  = (glyph_pos[i].x_offset + bearing_x) >> 6;
+      hb_position_t const y_offset  = (glyph_pos[i].y_offset + bearing_y) >> 6;
+      hb_position_t const x_advance = glyph_pos[i].x_advance >> 6;
+      hb_position_t const y_advance = glyph_pos[i].y_advance >> 6;
 
       QPoint currentPen = hbPen;
-      currentPen.rx() += g.m_metrics.m_xOffset * ratio;
-      currentPen.ry() -= g.m_metrics.m_yOffset * ratio;
-      painter.drawImage(currentPen, CreateImage(g.m_image.m_width, g.m_image.m_height, d),
-                        QRect(0, 0, g.m_image.m_width, g.m_image.m_height));
-      hbPen.rx() += g.m_metrics.m_xAdvance * ratio;
-      hbPen.ry() += g.m_metrics.m_yAdvance * ratio;
-
-      g.m_image.Destroy();
-
+      currentPen.rx() += x_offset * ratio;
+      currentPen.ry() -= y_offset * ratio;
+      painter.drawImage(currentPen, CreateImage(width, height, buffer),
+                        QRect(0, 0, width, height));
+      hbPen.rx() += x_advance * ratio;
+      hbPen.ry() += y_advance * ratio;
 
 
       //      std::printf("%X xoff: %d, yoff: %d, xadv: %d, yadv: %d\n", glyphid, x_offset, y_offset, x_advance, y_advance);
-//      std::printf("cursorx: %d, cursory: %d\n", cursor_x, cursor_y);
+      //      std::printf("cursorx: %d, cursory: %d\n", cursor_x, cursor_y);
 
-      cursor_x += x_advance;
-      cursor_y += y_advance;
+//      cursor_x += x_advance;
+//      cursor_y += y_advance;
     }
 
     // Tidy up.
@@ -187,12 +188,14 @@ public:
     //hb_face_destroy(face);
     //hb_blob_destroy(blob);
 
+
+    //////////////////////////////////////////////////////////////
     printf("Old drape code\n\n");
 
     std::vector<dp::GlyphManager::Glyph> glyphs;
     auto generateGlyph = [this, &glyphs](strings::UniChar c)
     {
-      dp::GlyphManager::Glyph g = m_mng->GetGlyph(c, dp::GlyphManager::kDynamicGlyphSize);
+      dp::GlyphManager::Glyph g = m_mng->GetGlyph(c, kFontSize);
       glyphs.push_back(dp::GlyphManager::GenerateGlyph(g, m_mng->GetSdfScale()));
       g.m_image.Destroy();
     };
@@ -238,7 +241,7 @@ UNIT_TEST(GlyphLoadingTest)
 //  renderer.SetString("ØŒÆ");
 //  RunTestLoop("Test1", std::bind(&GlyphRenderer::RenderGlyphs, &renderer, _1));
 
-  renderer.SetString("الحلّة");
+  renderer.SetString("الحلّة گلها");
   RunTestLoop("Test2", std::bind(&GlyphRenderer::RenderGlyphs, &renderer, _1));
 
 //  renderer.SetString("گُلها");
