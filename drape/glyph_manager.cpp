@@ -234,8 +234,7 @@ public:
                                                   true};
 
     result.m_code = unicodePoint;
-    result.m_fixedSize = isSdf ? GlyphManager::kDynamicGlyphSize
-                               : static_cast<int>(baseHeight);
+    result.m_fixedSize = isSdf ? GlyphManager::kDynamicGlyphSize : static_cast<int>(baseHeight);
     FT_Done_Glyph(glyph);
 
     return result;
@@ -604,8 +603,8 @@ GlyphManager::Glyph GlyphManager::GenerateGlyph(Glyph const & glyph, uint32_t sd
 
       img.GenerateSDF(1.0f / static_cast<float>(sdfScale));
 
-      ASSERT(img.GetWidth() == glyph.m_image.m_width, ());
-      ASSERT(img.GetHeight() == glyph.m_image.m_height, ());
+      ASSERT_EQUAL(img.GetWidth(), glyph.m_image.m_width, ());
+      ASSERT_EQUAL(img.GetHeight(), glyph.m_image.m_height, ());
 
       size_t const bufferSize = base::NextPowOf2(glyph.m_image.m_width * glyph.m_image.m_height);
       resultGlyph.m_image.m_data = SharedBufferManager::instance().reserveSharedBuffer(bufferSize);

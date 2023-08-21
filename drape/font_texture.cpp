@@ -110,7 +110,7 @@ GlyphIndex::~GlyphIndex()
 {
   m_generator->UnregisterListener(make_ref(this));
 
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard const lock(m_mutex);
   for (auto & node : m_pendingNodes)
     node.second.m_image.Destroy();
   m_pendingNodes.clear();

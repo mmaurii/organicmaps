@@ -63,7 +63,7 @@ void GlyphGenerator::GenerateGlyph(ref_ptr<Listener> listener, GlyphGenerationDa
 void GlyphGenerator::GenerateGlyphs(ref_ptr<Listener> listener,
                                     GlyphGenerationDataArray && generationData)
 {
-  std::lock_guard<std::mutex> lock(m_mutex);
+  std::lock_guard const lock(m_mutex);
   if (m_listeners.find(listener) == m_listeners.end())
   {
     for (auto & data : generationData)

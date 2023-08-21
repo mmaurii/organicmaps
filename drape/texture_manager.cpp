@@ -277,7 +277,7 @@ bool TextureManager::HasAsyncRoutines() const
 
 ref_ptr<Texture> TextureManager::AllocateGlyphTexture()
 {
-  std::lock_guard<std::mutex> lock(m_glyphTexturesMutex);
+  std::lock_guard const lock(m_glyphTexturesMutex);
   m2::PointU size(kGlyphsTextureSize, kGlyphsTextureSize);
   m_glyphTextures.push_back(make_unique_dp<FontTexture>(size, make_ref(m_glyphManager),
                                                         m_glyphGenerator,
