@@ -2,12 +2,7 @@
 
 #include "drape/pointers.hpp"
 
-#include "platform/platform.hpp"
-#include "coding/reader.hpp"
-
 #include "base/logging.hpp"
-#include "base/stl_helpers.hpp"
-#include "base/string_utils.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -222,7 +217,7 @@ void GlyphIndex::UploadResources(ref_ptr<dp::GraphicsContext> context, ref_ptr<T
 {
   PendingNodes pendingNodes;
   {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    std::lock_guard const lock(m_mutex);
     if (m_pendingNodes.empty())
       return;
     m_pendingNodes.swap(pendingNodes);

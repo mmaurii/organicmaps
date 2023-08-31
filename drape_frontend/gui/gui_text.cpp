@@ -367,7 +367,7 @@ void MutableLabel::Precache(PrecacheParams const & params, PrecacheResult & resu
   for (const auto & node : m_alphabet)
   {
     dp::TextureManager::GlyphRegion const & reg = node.second;
-    m2::PointU pixelSize(reg.GetPixelSize());
+    m2::PointU const pixelSize(reg.GetPixelSize());
     maxGlyphWidth = std::max(maxGlyphWidth, pixelSize.x);
     maxGlyphHeight = std::max(maxGlyphHeight, pixelSize.y);
   }
@@ -441,7 +441,7 @@ m2::PointF MutableLabel::GetAverageSize() const
   for (auto const & node : m_alphabet)
   {
     dp::TextureManager::GlyphRegion const & reg = node.second;
-    m2::PointF size = reg.GetPixelSize() * m_textRatio;
+    m2::PointF const size = reg.GetPixelSize() * m_textRatio;
     w += size.x;
     h = std::max(h, size.y);
   }
@@ -549,8 +549,8 @@ m2::PointF MutableLabelDrawer::Draw(ref_ptr<dp::GraphicsContext> context, Params
                                     ref_ptr<dp::TextureManager> mng,
                                     dp::Batcher::TFlushFn && flushFn)
 {
-  uint32_t vertexCount = dp::Batcher::VertexPerQuad * params.m_maxLength;
-  uint32_t indexCount = dp::Batcher::IndexPerQuad * params.m_maxLength;
+  uint32_t const vertexCount = dp::Batcher::VertexPerQuad * params.m_maxLength;
+  uint32_t const indexCount = dp::Batcher::IndexPerQuad * params.m_maxLength;
 
   ASSERT(params.m_handleCreator != nullptr, ());
   drape_ptr<MutableLabelHandle> handle = params.m_handleCreator(params.m_anchor, params.m_pivot);
@@ -579,7 +579,7 @@ m2::PointF MutableLabelDrawer::Draw(ref_ptr<dp::GraphicsContext> context, Params
   {
     dp::Batcher batcher(indexCount, vertexCount);
     batcher.SetBatcherHash(static_cast<uint64_t>(df::BatcherBucket::Default));
-    dp::SessionGuard guard(context, batcher, std::move(flushFn));
+    dp::SessionGuard const guard(context, batcher, std::move(flushFn));
     batcher.InsertListOfStrip(context, staticData.m_state, make_ref(&provider),
                               std::move(handle), dp::Batcher::VertexPerQuad);
   }

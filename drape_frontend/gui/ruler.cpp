@@ -239,7 +239,7 @@ void Ruler::DrawText(ref_ptr<dp::GraphicsContext> context, m2::PointF & size,
 {
   std::string alphabet;
   uint32_t maxTextLength;
-  RulerHelper & helper = DrapeGui::GetRulerHelper();
+  RulerHelper const & helper = DrapeGui::GetRulerHelper();
   helper.GetTextInitInfo(alphabet, maxTextLength);
 
   MutableLabelDrawer::Params params;
@@ -247,14 +247,14 @@ void Ruler::DrawText(ref_ptr<dp::GraphicsContext> context, m2::PointF & size,
   params.m_alphabet = alphabet;
   params.m_maxLength = maxTextLength;
   params.m_font = DrapeGui::GetGuiTextFont();
-  params.m_pivot = m_position.m_pixelPivot + m2::PointF(0.0, helper.GetVerticalTextOffset());
+  params.m_pivot = m_position.m_pixelPivot + m2::PointF(0.0f, helper.GetVerticalTextOffset());
   params.m_handleCreator = [isAppearing, tex](dp::Anchor anchor, m2::PointF const & pivot) {
     return make_unique_dp<RulerTextHandle>(EGuiHandle::GuiHandleRulerLabel, anchor, pivot,
                                            isAppearing, tex);
   };
 
-  m2::PointF textSize = MutableLabelDrawer::Draw(context, params, tex,
+  m2::PointF const textSize = MutableLabelDrawer::Draw(context, params, tex,
     std::bind(&ShapeControl::AddShape, &control, _1, _2));
-  size.y += (textSize.y + abs(helper.GetVerticalTextOffset()));
+  size.y += (textSize.y + std::abs(helper.GetVerticalTextOffset()));
 }
 }  // namespace gui
