@@ -405,7 +405,7 @@ void MutableLabel::SetText(LabelResult & result, std::string text) const
       ASSERT_EQUAL(normals.size(), maskTex.size(), ());
 
       for (size_t i = 0; i < normals.size(); ++i)
-        result.m_buffer.push_back(DynamicVertex(pen + normals[i], maskTex[i]));
+        result.m_buffer.emplace_back(pen + normals[i], maskTex[i]);
 
       float const advance = glyph.GetAdvanceX() * m_textRatio;
       length += advance + offsets.x;
