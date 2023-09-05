@@ -326,7 +326,7 @@ void TextureManager::GetGlyphsRegions(ref_ptr<FontTexture> tex, strings::UniStri
 }
 
 uint32_t TextureManager::GetNumberOfUnfoundCharacters(strings::UniString const & text, int fixedHeight,
-                                                      HybridGlyphGroup const & group) const
+                                                      HybridGlyphGroup const & group)
 {
   uint32_t cnt = 0;
   for (auto const & c : text)
