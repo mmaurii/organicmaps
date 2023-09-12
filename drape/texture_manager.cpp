@@ -158,8 +158,8 @@ m2::RectF const & TextureManager::BaseRegion::GetTexRect() const
 {
   if (!IsValid())
   {
-    static m2::RectF nilRect(0.0f, 0.0f, 0.0f, 0.0f);
-    return nilRect;
+    static m2::RectF constexpr kNilRect{0.0f, 0.0f, 0.0f, 0.0f};
+    return kNilRect;
   }
 
   return m_info->GetTexRect();

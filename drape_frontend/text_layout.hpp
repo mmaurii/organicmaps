@@ -27,7 +27,7 @@ namespace df
 class TextLayout
 {
 public:
-  virtual ~TextLayout() {}
+  virtual ~TextLayout() = default;
 
   void Init(strings::UniString && text, float fontSize, bool isSdf, ref_ptr<dp::TextureManager> textures);
 
