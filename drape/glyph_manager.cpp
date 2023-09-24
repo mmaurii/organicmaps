@@ -11,7 +11,6 @@
 #include "3party/sdf_image/sdf_image.h"
 
 #include <limits>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -155,18 +154,22 @@ public:
       MYTHROW(InvalidFontException, (g_FT_Errors[err].m_code, g_FT_Errors[err].m_message));
   }
 
-  bool IsValid() const
+  ~Font()
   {
-    return m_fontFace != nullptr && m_fontFace->num_glyphs > 0;
-  }
-
-  void DestroyFont()
-  {
-    if (m_fontFace != nullptr)
+    if (m_fontFace)
     {
       FREETYPE_CHECK(FT_Done_Face(m_fontFace));
       m_fontFace = nullptr;
     }
+    else
+    {
+      ASSERT(false, ("WTF"));
+    }
+  }
+
+  bool IsValid() const
+  {
+    return m_fontFace && m_fontFace->num_glyphs > 0;
   }
 
   bool HasGlyph(strings::UniChar unicodePoint) const
@@ -336,6 +339,19 @@ using TUniBlockIter = TUniBlocks::const_iterator;
 
 struct GlyphManager::Impl
 {
+  Impl() = default;
+
+  ~Impl() {
+    m_fonts.clear();
+    if (m_library)
+      FREETYPE_CHECK(FT_Done_FreeType(m_library));
+  }
+
+  Impl(Impl const &) = delete;
+  Impl(Impl &&) = delete;
+  Impl & operator=(Impl const &) = delete;
+  Impl & operator=(Impl &&) = delete;
+
   FT_Library m_library;
   TUniBlocks m_blocks;
   TUniBlockIter m_lastUsedBlock;
@@ -345,8 +361,11 @@ struct GlyphManager::Impl
   uint32_t m_sdfScale;
 };
 
+// Destructor is defined where pimpl's destructor is already known.
+GlyphManager::~GlyphManager() = default;
+
 GlyphManager::GlyphManager(GlyphManager::Params const & params)
-  : m_impl(new Impl())
+  : m_impl(std::make_unique<Impl>())
 {
   m_impl->m_baseGlyphHeight = params.m_baseGlyphHeight;
   m_impl->m_sdfScale = params.m_sdfScale;
@@ -465,7 +484,7 @@ GlyphManager::GlyphManager(GlyphManager::Params const & params)
       node.second = static_cast<int>(uniBlock.m_end + 1 - uniBlock.m_start + m_impl->m_fonts.size());
     });
 
-    for (CoverNode & node : coverInfo)
+    for (CoverNode const & node : coverInfo)
     {
       UnicodeBlock & uniBlock = m_impl->m_blocks[node.first];
       uniBlock.m_fontsWeight.resize(m_impl->m_fonts.size(), 0);
@@ -494,15 +513,6 @@ GlyphManager::GlyphManager(GlyphManager::Params const & params)
       LOG_SHORT(LDEBUG, (b.m_name, "is in", params.m_fonts[ind]));
     }
   }
-}
-
-GlyphManager::~GlyphManager()
-{
-  for (auto const & f : m_impl->m_fonts)
-    f->DestroyFont();
-
-  FREETYPE_CHECK(FT_Done_FreeType(m_impl->m_library));
-  delete m_impl;
 }
 
 uint32_t GlyphManager::GetBaseGlyphHeight() const

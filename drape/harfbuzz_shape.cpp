@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include <hb-font.h>
+#include <hb.h>
 #include <unicode/uscript.h>  // UScriptCode
 #include <unicode/utf16.h>  // U16_NEXT
-
+/*
 namespace
 {
 // The maximum number of scripts a Unicode character can belong to. This value
@@ -212,18 +212,16 @@ size_t ScriptInterval(const std::u16string& text,
   return length;
 }
 
-void ItemizeTextToRuns(
-    const std::u16string& text,
-    internal::TextRunList* out_run_list,
-    CommonizedRunsMap* out_commonized_run_map) {
+struct Runs
+{
+  int32_t start, end;
+  Font * font;
+};
+
+Runs ItemizeTextToRuns(std::u16string const & text)
+{
   ASSERT(!text.empty(), ());
-  //const Font& primary_font = font_list().GetPrimaryFont();
-
   auto const textLength = static_cast<int32_t>(text.length());
-
-  // If ICU fails to itemize the text, we create a run that spans the entire
-  // text. This is needed because leaving the runs set empty causes some clients
-  // to misbehave since they expect non-zero text metrics from a non-empty text.
 
   // Deliberately not checking for nullptr.
   thread_local static UBiDi * bidi = ubidi_open();
@@ -231,14 +229,9 @@ void ItemizeTextToRuns(
   ubidi_setPara(bidi, text.data(), textLength, UBIDI_DEFAULT_LTR, nullptr, &error);
   if (U_FAILURE(error))
   {
-    // TODO:
-//    auto run = std::make_unique<internal::TextRunHarfBuzz>(
-//        font_list().GetPrimaryFont());
-//    run->range = Range(0, text.length());
-//    internal::TextRunHarfBuzz::FontParams font_params(primary_font);
-//    (*out_commonized_run_map)[font_params].push_back(run.get());
-//    out_run_list->Add(std::move(run));
-//    return;
+    LOG(LERROR, ("ubidi_setPara failed with code", error));
+    auto font = nullptr; // default font
+    return {0, textLength, font};
   }
 
   // Iterator to split ranged styles and baselines. The color attributes don't
@@ -292,7 +285,7 @@ void ItemizeTextToRuns(
 
         // Add the created run to the set of runs.
         (*out_commonized_run_map)[font_params].push_back(run.get());
-        out_run_list->Add(std::move(run));
+        //out_run_list->Add(std::move(run));
 
 //        // Move to the next run.
 //        breaking_run_start = breaking_run_end;
@@ -456,13 +449,11 @@ void ShapeRunsWithFont(const std::u16string& text, const internal::TextRunHarfBu
 
 
 
-
-// Requires that text does not have any newline \r or \n characters.
-void ShapeRuns(const std::u16string& text, const internal::TextRunHarfBuzz::FontParams& font_params,
+void ShapeRuns(const std::u16string& text, int8_t lang, const internal::TextRunHarfBuzz::FontParams& font_params,
                std::vector<internal::TextRunHarfBuzz*> runs) {
   // Runs with a single newline character should be skipped since they can't be
   // rendered (see http://crbug/680430). The following code sets the runs
-  // shaping output to report report the missing glyph and removes the runs from
+  // shaping output to report  the missing glyph and removes the runs from
   // the vector of runs to shape. The newline character doesn't have a
   // glyph, which otherwise forces this function to go through the expensive
   // font fallbacks before reporting a missing glyph (see http://crbug/972090).
@@ -637,15 +628,17 @@ void ShapeRuns(const std::u16string& text, const internal::TextRunHarfBuzz::Font
 }
 
 
-void ItemizeAndShapeText(const std::u16string& text, internal::TextRunList* run_list) {
-  CommonizedRunsMap commonized_run_map;
-  ItemizeTextToRuns(text, run_list, &commonized_run_map);
-  for (auto iter = commonized_run_map.begin(); iter != commonized_run_map.end();
-       ++iter) {
+// Shapes a single line of text without newline \r or \n characters.
+// Any line breaking or trimming should be done by the caller.
+void ItemizeAndShapeText(std::string_view utf8, int8_t lang)
+{
+  ASSERT(!utf8.empty(), ());
+  auto const utf16 = icu::UnicodeString::fromUTF8(text);
+  for (auto const & run : ItemizeTextToRuns(utf16))
+  {
     internal::TextRunHarfBuzz::FontParams font_params = iter->first;
     font_params.ComputeRenderParamsFontSizeAndBaselineOffset();
-    ShapeRuns(text, font_params, std::move(iter->second));
+    ShapeRuns(utf16, lang, font_params, std::move(iter->second));
   }
-  run_list->InitIndexMap();
-  run_list->ComputePrecedingRunWidths();
 }
+*/

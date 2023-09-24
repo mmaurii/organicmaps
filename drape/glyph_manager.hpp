@@ -3,9 +3,10 @@
 #include "base/shared_buffer_manager.hpp"
 #include "base/string_utils.hpp"
 
+#include <functional>
+#include <memory>
 #include <string>
 #include <vector>
-#include <functional>
 
 namespace dp
 {
@@ -76,6 +77,11 @@ public:
   explicit GlyphManager(Params const & params);
   ~GlyphManager();
 
+  GlyphManager(GlyphManager const & params) = delete;
+  GlyphManager(GlyphManager && params) = delete;
+  GlyphManager & operator=(GlyphManager const &) = delete;
+  GlyphManager & operator=(GlyphManager &&) = delete;
+
   Glyph GetGlyph(strings::UniChar unicodePoints, int fixedHeight);
 
   void MarkGlyphReady(Glyph const & glyph);
@@ -96,6 +102,6 @@ private:
 
 private:
   struct Impl;
-  Impl * m_impl;
+  std::unique_ptr<Impl> m_impl;
 };
 }  // namespace dp
