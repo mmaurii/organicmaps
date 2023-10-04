@@ -5,7 +5,7 @@
 #include <hb.h>
 #include <unicode/uscript.h>  // UScriptCode
 #include <unicode/utf16.h>  // U16_NEXT
-/*
+
 namespace
 {
 // The maximum number of scripts a Unicode character can belong to. This value
@@ -627,13 +627,12 @@ void ShapeRuns(const std::u16string& text, int8_t lang, const internal::TextRunH
   RecordShapeRunsFallback(ShapeRunFallback::FAILED);
 }
 
-
 // Shapes a single line of text without newline \r or \n characters.
 // Any line breaking or trimming should be done by the caller.
 void ItemizeAndShapeText(std::string_view utf8, int8_t lang)
 {
   ASSERT(!utf8.empty(), ());
-  auto const utf16 = icu::UnicodeString::fromUTF8(text);
+  auto const utf16 = icu::UnicodeString::fromUTF8(utf8);
   for (auto const & run : ItemizeTextToRuns(utf16))
   {
     internal::TextRunHarfBuzz::FontParams font_params = iter->first;
@@ -641,4 +640,3 @@ void ItemizeAndShapeText(std::string_view utf8, int8_t lang)
     ShapeRuns(utf16, lang, font_params, std::move(iter->second));
   }
 }
-*/
