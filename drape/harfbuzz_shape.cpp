@@ -212,6 +212,11 @@ size_t ScriptInterval(const std::u16string& text,
   return length;
 }
 
+struct FontParams {
+  int pixelSize;
+  int8_t lang;
+};
+
 struct Runs
 {
   int32_t start, end;
@@ -300,37 +305,48 @@ Runs ItemizeTextToRuns(std::u16string const & text)
   }
 }
 
+// A copy of hb_icu_script_to_script to avoid direct ICU dependency.
+hb_script_t ICUScriptToHarfbuzzScript(UScriptCode script) {
+    if (script == USCRIPT_INVALID_CODE)
+      return HB_SCRIPT_INVALID;
+    return hb_script_from_string(uscript_getShortName (script), -1);
+}
 
+hb_language_t OrganicMapsLanguageToHarfbuzzLanguage(int8_t lang) {
+    // TODO(AB): langs can be converted faster.
+    auto const langsv = StringUtf8Multilang::GetLangByCode(lang)
+    auto hbLanguage = hb_language_from_string(sv.data(), sv.size());
+    if (hbLanguage == HB_LANGUAGE_INVALID)
+      return hb_language_get_default();
+    return hbLanguage;
+}
 
-void ShapeRunWithFont(const ShapeRunWithFontInput& in, TextRunHarfBuzz::ShapeOutput* out) {
+void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLength, UScriptCode script, bool isRtl, int8_t lang,
+                      TextRunHarfBuzz::ShapeOutput* out) {
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(in.skia_face, SkIntToScalar(in.font_size),
                          in.render_params, in.subpixel_rendering_suppressed);
 
   // Create a HarfBuzz buffer and add the string to be shaped. The HarfBuzz
   // buffer holds our text, run information to be used by the shaping engine,
   // and the resulting glyph data.
-  hb_buffer_t* buffer = hb_buffer_create();
+  hb_buffer_t * buffer = hb_buffer_create();
   // Note that the value of the |item_offset| argument (here specified as
   // |in.range.start()|) does affect the result, so we will have to adjust
   // the computed offsets.
-  hb_buffer_add_utf16(
-      buffer, reinterpret_cast<const uint16_t*>(in.text.c_str()),
-      static_cast<int>(in.text.length()), in.range.start(), in.range.length());
-  hb_buffer_set_script(buffer, ICUScriptToHBScript(in.script));
-  hb_buffer_set_direction(buffer,
-                          in.is_rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
-  // TODO(ckocagil): Should we determine the actual language?
-  hb_buffer_set_language(buffer, hb_language_get_default());
+  hb_buffer_add_utf16(buffer, reinterpret_cast<uint16_t const *>(text.data()), static_cast<int>(text.size()), runOffset, runLength);
+  hb_buffer_set_script(buffer, ICUScriptToHarfbuzzScript(script));
+  hb_buffer_set_direction(buffer,isRtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
+
+  hb_buffer_set_language(buffer, OrganicMapsLanguageToHarfbuzzLanguage(lang));
 
   // Shape the text.
-  hb_shape(harfbuzz_font, buffer, NULL, 0);
+  hb_shape(harfbuzz_font, buffer, nullptr, 0);
 
   // Populate the run fields with the resulting glyph data in the buffer.
   unsigned int glyph_count = 0;
-  hb_glyph_info_t* infos = hb_buffer_get_glyph_infos(buffer, &glyph_count);
+  hb_glyph_info_t * infos = hb_buffer_get_glyph_infos(buffer, &glyph_count);
   out->glyph_count = glyph_count;
-  hb_glyph_position_t* hb_positions =
-      hb_buffer_get_glyph_positions(buffer, NULL);
+  hb_glyph_position_t * hb_positions = hb_buffer_get_glyph_positions(buffer, nullptr);
   out->glyphs.resize(out->glyph_count);
   out->glyph_to_char.resize(out->glyph_count);
   out->positions.resize(out->glyph_count);
@@ -394,7 +410,7 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in, TextRunHarfBuzz::ShapeOut
 
 
 
-void ShapeRunsWithFont(const std::u16string& text, const internal::TextRunHarfBuzz::FontParams& font_params,
+void ShapeRunsWithFont(std::u16string const & text, FontParams const & fontParams,
     std::vector<internal::TextRunHarfBuzz*>* in_out_runs) {
   // ShapeRunWithFont can be extremely slow, so use cached results if possible.
   // Only do this on the UI thread, to avoid synchronization overhead (and
@@ -406,30 +422,28 @@ void ShapeRunsWithFont(const std::u16string& text, const internal::TextRunHarfBu
   std::vector<internal::TextRunHarfBuzz*> runs_with_missing_glyphs;
   for (internal::TextRunHarfBuzz*& run : *in_out_runs) {
     // First do a cache lookup.
-    bool can_use_cache = base::CurrentUIThread::IsSet() &&
-                         run->range.length() <= kMaxRunLengthToCache;
-    bool found_in_cache = false;
-    const internal::ShapeRunWithFontInput cache_key(
-        text, font_params, run->range, obscured(), glyph_width_for_test_,
-        obscured_glyph_spacing(), subpixel_rendering_suppressed());
-    if (can_use_cache) {
-      auto found = cache.get()->Get(cache_key);
-      if (found != cache.get()->end()) {
-        run->UpdateFontParamsAndShape(font_params, found->second);
-        found_in_cache = true;
-      }
-    }
+//    bool can_use_cache = base::CurrentUIThread::IsSet() &&
+//                         run->range.length() <= kMaxRunLengthToCache;
+//    bool found_in_cache = false;
+//    const internal::ShapeRunWithFontInput cache_key(
+//        text, font_params, run->range, obscured(), glyph_width_for_test_,
+//        obscured_glyph_spacing(), subpixel_rendering_suppressed());
+//    if (can_use_cache) {
+//      auto found = cache.get()->Get(cache_key);
+//      if (found != cache.get()->end()) {
+//        run->UpdateFontParamsAndShape(font_params, found->second);
+//        found_in_cache = true;
+//      }
+//    }
 
-    // If that fails, compute the shape of the run, and add the result to the
-    // cache.
-    // TODO(ccameron): Coalesce calls to ShapeRunsWithFont when possible.
-    if (!found_in_cache) {
+    // If that fails, compute the shape of the run, and add the result to the cache.
+//    if (!found_in_cache) {
       internal::TextRunHarfBuzz::ShapeOutput output;
       ShapeRunWithFont(cache_key, &output);
       run->UpdateFontParamsAndShape(font_params, output);
       if (can_use_cache)
         cache.get()->Put(cache_key, output);
-    }
+//    }
 
     // Check to see if we still have missing glyphs.
     if (run->shape.missing_glyph_count)
@@ -449,7 +463,7 @@ void ShapeRunsWithFont(const std::u16string& text, const internal::TextRunHarfBu
 
 
 
-void ShapeRuns(const std::u16string& text, int8_t lang, const internal::TextRunHarfBuzz::FontParams& font_params,
+void ShapeRuns(const std::u16string& text, int8_t lang, FontParams const & fontParams,
                std::vector<internal::TextRunHarfBuzz*> runs) {
   // Runs with a single newline character should be skipped since they can't be
   // rendered (see http://crbug/680430). The following code sets the runs
@@ -629,14 +643,14 @@ void ShapeRuns(const std::u16string& text, int8_t lang, const internal::TextRunH
 
 // Shapes a single line of text without newline \r or \n characters.
 // Any line breaking or trimming should be done by the caller.
-void ItemizeAndShapeText(std::string_view utf8, int8_t lang)
+void ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams const & fontParams)
 {
   ASSERT(!utf8.empty(), ());
   auto const utf16 = icu::UnicodeString::fromUTF8(utf8);
   for (auto const & run : ItemizeTextToRuns(utf16))
   {
-    internal::TextRunHarfBuzz::FontParams font_params = iter->first;
-    font_params.ComputeRenderParamsFontSizeAndBaselineOffset();
-    ShapeRuns(utf16, lang, font_params, std::move(iter->second));
+    //internal::TextRunHarfBuzz::FontParams font_params = iter->first;
+    //font_params.ComputeRenderParamsFontSizeAndBaselineOffset();
+    ShapeRuns(utf16, lang, fontParams, run);
   }
 }
