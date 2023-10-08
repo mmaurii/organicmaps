@@ -59,7 +59,7 @@ public:
 
     // Initialize FreeType
     if (FT_Init_FreeType(&library)) {
-      std::cerr << "Can't initialize FreeType" << std::endl;
+      std::cerr << "Can't initialize FreeType\n";
       return;
     }
 
@@ -104,7 +104,7 @@ public:
       return;
     }
 
-    long constexpr kFontSize = 60;
+    long constexpr kFontSize = 40;
 
     // Set character size
 //    if (FT_Set_Char_Size(face, kFontSize << 6, kFontSize << 6, 0, 0)) {
@@ -135,7 +135,7 @@ public:
 //    hb_position_t cursor_x = 0;
 //    hb_position_t cursor_y = 0;
 
-    QPoint hbPen(100, 100);
+    QPoint hbPen(10, 100);
 
     for (unsigned int i = 0; i < glyph_count; i++) {
       hb_codepoint_t const glyphid = glyph_info[i].codepoint;
@@ -203,7 +203,7 @@ public:
     for (auto const & ucp : m_toDraw)
       generateGlyph(ucp);
 
-    QPoint pen(100, 200);
+    QPoint pen(10, 200);
     //float const ratio = 2.0;
     for (auto & g : glyphs)
     {
@@ -241,7 +241,8 @@ UNIT_TEST(GlyphLoadingTest)
 //  renderer.SetString("ØŒÆ");
 //  RunTestLoop("Test1", std::bind(&GlyphRenderer::RenderGlyphs, &renderer, _1));
 
-  renderer.SetString("الحلّة گلها");
+  //renderer.SetString("الحلّة گلها");
+  renderer.SetString("الحلّة گلها"" كسول الزنجبيل القط"" اَلْعَرَبِيَّةُ");
   RunTestLoop("Test2", std::bind(&GlyphRenderer::RenderGlyphs, &renderer, _1));
 
 //  renderer.SetString("گُلها");
