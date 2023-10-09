@@ -313,12 +313,65 @@ hb_script_t ICUScriptToHarfbuzzScript(UScriptCode script) {
 }
 
 hb_language_t OrganicMapsLanguageToHarfbuzzLanguage(int8_t lang) {
-    // TODO(AB): langs can be converted faster.
-    auto const langsv = StringUtf8Multilang::GetLangByCode(lang)
-    auto hbLanguage = hb_language_from_string(sv.data(), sv.size());
+    // TODO(AB): can langs be converted faster?
+    auto const langsv = StringUtf8Multilang::GetLangByCode(lang);
+    auto const hbLanguage = hb_language_from_string(sv.data(), sv.size());
     if (hbLanguage == HB_LANGUAGE_INVALID)
       return hb_language_get_default();
     return hbLanguage;
+}
+
+// We treat HarfBuzz ints as 16.16 fixed-point.
+static const int kHbUnit1 = 1 << 16;
+
+int SkiaScalarToHarfBuzzUnits(SkScalar value) {
+    return base::saturated_cast<int>(value * kHbUnit1);
+}
+
+SkScalar HarfBuzzUnitsToSkiaScalar(int value) {
+    static const SkScalar kSkToHbRatio = SK_Scalar1 / kHbUnit1;
+    return kSkToHbRatio * value;
+}
+
+float HarfBuzzUnitsToFloat(int value) {
+    static const float kFloatToHbRatio = 1.0f / kHbUnit1;
+    return kFloatToHbRatio * value;
+}
+
+hb_font_t* CreateHarfbuzzFont(Font const & font,
+                               int text_size,
+                               const FontRenderParams& params,
+                               bool subpixel_rendering_suppressed) {
+    // A cache from Skia font to harfbuzz typeface information.
+    using TypefaceCache = base::LRUCache<SkFontID, TypefaceData>;
+
+    constexpr int kTypefaceCacheSize = 64;
+    static base::NoDestructor<TypefaceCache> face_caches(kTypefaceCacheSize);
+
+    TypefaceCache* typeface_cache = face_caches.get();
+    TypefaceCache::iterator typeface_data =
+        typeface_cache->Get(skia_face->uniqueID());
+    if (typeface_data == typeface_cache->end()) {
+      TypefaceData new_typeface_data(skia_face);
+      typeface_data = typeface_cache->Put(skia_face->uniqueID(),
+                                          std::move(new_typeface_data));
+    }
+
+    DCHECK(typeface_data->second.face());
+    hb_font_t* harfbuzz_font = hb_font_create(typeface_data->second.face());
+
+    const int scale = SkiaScalarToHarfBuzzUnits(text_size);
+    hb_font_set_scale(harfbuzz_font, scale, scale);
+    FontData* hb_font_data = new FontData(typeface_data->second.glyphs());
+    hb_font_data->font_.setTypeface(std::move(skia_face));
+    hb_font_data->font_.setSize(text_size);
+    // TODO(ckocagil): Do we need to update these params later?
+    internal::ApplyRenderParams(params, subpixel_rendering_suppressed,
+                                &hb_font_data->font_);
+    hb_font_set_funcs(harfbuzz_font, g_font_funcs.Get().get(), hb_font_data,
+                      DeleteByType<FontData>);
+    hb_font_make_immutable(harfbuzz_font);
+    return harfbuzz_font;
 }
 
 void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLength, UScriptCode script, bool isRtl, int8_t lang,
