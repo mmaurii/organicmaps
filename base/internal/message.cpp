@@ -4,7 +4,7 @@
 
 #include <utf8cpp/utf8/unchecked.h>
 
-std::string DebugPrint(std::string const & t)
+std::string DebugPrint(std::string && t)
 {
 #ifdef OMIM_OS_WINDOWS
   string res;
