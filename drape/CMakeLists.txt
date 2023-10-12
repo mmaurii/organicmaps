@@ -52,7 +52,7 @@ set(SRC
   graphics_context.hpp
   graphics_context_factory.cpp
   graphics_context_factory.hpp
-  harfbuzz_shape.cpp
+  #harfbuzz_shape.cpp
   hw_texture.cpp
   hw_texture.hpp
   index_buffer.cpp

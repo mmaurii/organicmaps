@@ -699,7 +699,8 @@ void ShapeRuns(const std::u16string& text, int8_t lang, FontParams const & fontP
 void ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams const & fontParams)
 {
   ASSERT(!utf8.empty(), ());
-  auto const utf16 = icu::UnicodeString::fromUTF8(utf8);
+  // TODO(AB): Can unnecessary conversion/allocation be avoided?
+  auto const utf16 = utf8::utf8to16(utf8);
   for (auto const & run : ItemizeTextToRuns(utf16))
   {
     //internal::TextRunHarfBuzz::FontParams font_params = iter->first;
