@@ -41,22 +41,10 @@ FreetypeError constexpr g_FT_Errors[] =
     { \
       FT_Error const err = (x); \
       if (err) \
-        LOG(LWARNING, ("Freetype:", g_FT_Errors[err].m_code, g_FT_Errors[err].m_message)); \
-    } while (false)
-
-  #define FREETYPE_CHECK_RETURN(x, msg) \
-    do \
-    { \
-      FT_Error const err = (x); \
-      if (err) \
-      { \
-        LOG(LWARNING, ("Freetype", g_FT_Errors[err].m_code, g_FT_Errors[err].m_message, msg)); \
-        return; \
-      } \
+        LOG(LERROR, ("Freetype:", g_FT_Errors[err].m_code, g_FT_Errors[err].m_message)); \
     } while (false)
 #else
   #define FREETYPE_CHECK(x) x
-  #define FREETYPE_CHECK_RETURN(x, msg) FREETYPE_CHECK(x)
 #endif
 
 namespace dp
@@ -124,7 +112,7 @@ public:
   DECLARE_EXCEPTION(InvalidFontException, RootException);
 
   Font(uint32_t sdfScale, ReaderPtr<Reader> fontReader, FT_Library lib)
-    : m_fontReader(fontReader)
+    : m_fontReader(std::move(fontReader))
     , m_fontFace(nullptr)
     , m_sdfScale(sdfScale)
   {
@@ -141,13 +129,13 @@ public:
 
     FT_Open_Args args;
     args.flags = FT_OPEN_STREAM;
-    args.memory_base = 0;
+    args.memory_base = nullptr;
     args.memory_size = 0;
-    args.pathname = 0;
+    args.pathname = nullptr;
     args.stream = &m_stream;
-    args.driver = 0;
+    args.driver = nullptr;
     args.num_params = 0;
-    args.params = 0;
+    args.params = nullptr;
 
     FT_Error const err = FT_Open_Face(lib, &args, 0, &m_fontFace);
     if (err || !IsValid())
