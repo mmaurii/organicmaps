@@ -1,8 +1,10 @@
 #include "base/assert.hpp"
+#include "base/string_utils.hpp"
 
 #include <string>
 
 #include <hb.h>
+#include <unicode/ubidi.h>  // ubidi_open, ubidi_setPara
 #include <unicode/uscript.h>  // UScriptCode
 #include <unicode/utf16.h>  // U16_NEXT
 
@@ -46,8 +48,7 @@ constexpr size_t kMaxScripts = 32;
 size_t GetScriptExtensions(UChar32 codepoint, UScriptCode* scripts) {
   // Fill |scripts| with the script extensions.
   UErrorCode icu_error = U_ZERO_ERROR;
-  size_t const count =
-      uscript_getScriptExtensions(codepoint, scripts, kMaxScripts, &icu_error);
+  size_t const count = uscript_getScriptExtensions(codepoint, scripts, kMaxScripts, &icu_error);
   if (U_FAILURE(icu_error))
     return 0;
 
@@ -55,9 +56,9 @@ size_t GetScriptExtensions(UChar32 codepoint, UScriptCode* scripts) {
 }
 
 // Intersects the script extensions set of |codepoint| with |result| and writes
-// to |result|, reading and updating |result_size|. The output |result| will be
-// a subset of the input |result| (thus |result_size| can only be smaller).
-void ScriptSetIntersect(UChar32 codepoint, UScriptCode* result, size_t* result_size) {
+// to |result|, reading and updating |resultSize|. The output |result| will be
+// a subset of the input |result| (thus |resultSize| can only be smaller).
+void ScriptSetIntersect(UChar32 codepoint, UScriptCode* result, size_t* resultSize) {
   // Each codepoint has a Script property and a Script Extensions (Scx)
   // property.
   //
@@ -105,14 +106,15 @@ void ScriptSetIntersect(UChar32 codepoint, UScriptCode* result, size_t* result_s
 
   // Perform the intersection of both script set.
   ASSERT(!contains(USCRIPT_INHERITED), ());
-  size_t out_size = 0;
-  for (size_t i = 0; i < *result_size; ++i) {
+  size_t outSize = 0;
+  for (size_t i = 0; i < *resultSize; ++i)
+  {
     auto const current = result[i];
     if (contains(current))
-      result[out_size++] = current;
+      result[outSize++] = current;
   }
 
-  *result_size = out_size;
+  *resultSize = outSize;
 }
 
 // The CharIterator classes iterate through the characters in UTF8 and
@@ -190,25 +192,25 @@ private:
 // Consider 3 characters with the script values {Kana}, {Hira, Kana}, {Kana}.
 // Without script extensions only the first script in each set would be taken
 // into account, resulting in 3 runs where 1 would be enough.
-size_t ScriptInterval(const std::u16string& text,
-                      size_t start,
-                      size_t length,
-                      UScriptCode* script) {
+size_t ScriptInterval(std::u16string const & text, size_t start, size_t length, UScriptCode* script)
+{
   ASSERT_GREATER(length, 0U, ());
-
   UScriptCode scripts[kMaxScripts] = { USCRIPT_INVALID_CODE };
 
-  UTF16CharIterator char_iterator{std::u16string_view{text.c_str() + start, length}};
-  size_t scripts_size = GetScriptExtensions(char_iterator.get(), scripts);
-  *script = scripts[0];
+  UTF16CharIterator iterator{std::u16string_view{text.data() + start, length}};
+  size_t scriptsSize = GetScriptExtensions(iterator.get(), scripts);
 
-  while (char_iterator.Advance()) {
-    ScriptSetIntersect(char_iterator.get(), scripts, &scripts_size);
-    if (scripts_size == 0U)
-      return char_iterator.array_pos();
-    *script = scripts[0];
+  while (iterator.Advance())
+  {
+    ScriptSetIntersect(iterator.get(), scripts, &scriptsSize);
+    if (scriptsSize == 0U)
+    {
+      length = iterator.array_pos();
+      break;
+    }
   }
 
+  *script = scripts[0];
   return length;
 }
 
@@ -229,7 +231,7 @@ Runs ItemizeTextToRuns(std::u16string const & text)
   auto const textLength = static_cast<int32_t>(text.length());
 
   // Deliberately not checking for nullptr.
-  thread_local static UBiDi * bidi = ubidi_open();
+  thread_local static UBiDi * const bidi = ubidi_open();
   UErrorCode error = U_ZERO_ERROR;
   ubidi_setPara(bidi, text.data(), textLength, UBIDI_DEFAULT_LTR, nullptr, &error);
   if (U_FAILURE(error))
@@ -261,6 +263,8 @@ Runs ItemizeTextToRuns(std::u16string const & text)
       size_t const script_run_end = ScriptInterval(text, script_run_start,
                          bidi_run_end - script_run_start, &script) + script_run_start;
       ASSERT_LESS(script_run_start, script_run_end, ());
+
+      // TODO(AB): May need to break on different unicode blocks, parentheses, and control chars (spaces).
 
 //      for (size_t breaking_run_start = script_run_start; breaking_run_start < script_run_end;) {
 //        // Find the break boundary for style. The style won't break a grapheme
@@ -700,7 +704,7 @@ void ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams const & 
 {
   ASSERT(!utf8.empty(), ());
   // TODO(AB): Can unnecessary conversion/allocation be avoided?
-  auto const utf16 = utf8::utf8to16(utf8);
+  auto const utf16 = strings::ToUtf16(utf8);
   for (auto const & run : ItemizeTextToRuns(utf16))
   {
     //internal::TextRunHarfBuzz::FontParams font_params = iter->first;
