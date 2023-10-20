@@ -144,15 +144,9 @@ public:
 
   ~Font()
   {
-    if (m_fontFace)
-    {
-      FREETYPE_CHECK(FT_Done_Face(m_fontFace));
-      m_fontFace = nullptr;
-    }
-    else
-    {
-      ASSERT(false, ("WTF"));
-    }
+    ASSERT(m_fontFace, ());
+    FREETYPE_CHECK(FT_Done_Face(m_fontFace));
+    m_fontFace = nullptr;
   }
 
   bool IsValid() const

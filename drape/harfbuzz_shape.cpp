@@ -225,7 +225,7 @@ struct Runs
   Font * font;
 };
 
-Runs ItemizeTextToRuns(std::u16string const & text)
+Runs GetTextLineRuns(std::u16string const & text)
 {
   ASSERT(!text.empty(), ());
   auto const textLength = static_cast<int32_t>(text.length());
@@ -342,9 +342,7 @@ float HarfBuzzUnitsToFloat(int value) {
     return kFloatToHbRatio * value;
 }
 
-hb_font_t* CreateHarfbuzzFont(Font const & font,
-                               int text_size,
-                               const FontRenderParams& params,
+hb_font_t* CreateHarfbuzzFont(Font const & font, int textSize, const FontRenderParams& params,
                                bool subpixel_rendering_suppressed) {
     // A cache from Skia font to harfbuzz typeface information.
     using TypefaceCache = base::LRUCache<SkFontID, TypefaceData>;
@@ -467,40 +465,30 @@ void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLe
 
 
 
-void ShapeRunsWithFont(std::u16string const & text, FontParams const & fontParams,
-    std::vector<internal::TextRunHarfBuzz*>* in_out_runs) {
-  // ShapeRunWithFont can be extremely slow, so use cached results if possible.
-  // Only do this on the UI thread, to avoid synchronization overhead (and
-  // because almost all calls are on the UI thread. Also avoid caching long
-  // strings, to avoid blowing up the cache size.
-  constexpr size_t kMaxRunLengthToCache = 25;
-  static base::NoDestructor<internal::ShapeRunCache> cache;
 
-  std::vector<internal::TextRunHarfBuzz*> runs_with_missing_glyphs;
-  for (internal::TextRunHarfBuzz*& run : *in_out_runs) {
-    // First do a cache lookup.
-//    bool can_use_cache = base::CurrentUIThread::IsSet() &&
-//                         run->range.length() <= kMaxRunLengthToCache;
-//    bool found_in_cache = false;
-//    const internal::ShapeRunWithFontInput cache_key(
-//        text, font_params, run->range, obscured(), glyph_width_for_test_,
-//        obscured_glyph_spacing(), subpixel_rendering_suppressed());
-//    if (can_use_cache) {
-//      auto found = cache.get()->Get(cache_key);
-//      if (found != cache.get()->end()) {
-//        run->UpdateFontParamsAndShape(font_params, found->second);
-//        found_in_cache = true;
-//      }
-//    }
 
-    // If that fails, compute the shape of the run, and add the result to the cache.
-//    if (!found_in_cache) {
-      internal::TextRunHarfBuzz::ShapeOutput output;
-      ShapeRunWithFont(cache_key, &output);
-      run->UpdateFontParamsAndShape(font_params, output);
-      if (can_use_cache)
-        cache.get()->Put(cache_key, output);
-//    }
+class TextRuns
+{
+
+};
+
+class Font
+{
+
+};
+
+void ShapeRuns(const std::u16string& text, int8_t lang, FontParams const & fontParams, TextRuns& runs)
+{
+  for (auto & run : runs)
+  {
+    // TODO(AB): Cache runs.
+
+    internal::TextRunHarfBuzz::ShapeOutput output;
+    ShapeRunWithFont(cache_key, &output);
+    run->UpdateFontParamsAndShape(font_params, output);
+    if (can_use_cache)
+      cache.get()->Put(cache_key, output);
+    //    }
 
     // Check to see if we still have missing glyphs.
     if (run->shape.missing_glyph_count)
@@ -509,206 +497,13 @@ void ShapeRunsWithFont(std::u16string const & text, FontParams const & fontParam
   in_out_runs->swap(runs_with_missing_glyphs);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-void ShapeRuns(const std::u16string& text, int8_t lang, FontParams const & fontParams,
-               std::vector<internal::TextRunHarfBuzz*> runs) {
-  // Runs with a single newline character should be skipped since they can't be
-  // rendered (see http://crbug/680430). The following code sets the runs
-  // shaping output to report  the missing glyph and removes the runs from
-  // the vector of runs to shape. The newline character doesn't have a
-  // glyph, which otherwise forces this function to go through the expensive
-  // font fallbacks before reporting a missing glyph (see http://crbug/972090).
-//  std::vector<internal::TextRunHarfBuzz*> need_shaping_runs;
-//  for (internal::TextRunHarfBuzz*& run : runs) {
-//    if ((run->range.length() == 1 && (text[run->range.start()] == '\r' ||
-//                                      text[run->range.start()] == '\n')) ||
-//        (run->range.length() == 2 && text[run->range.start()] == '\r' &&
-//         text[run->range.start() + 1] == '\n')) {
-//      // Newline runs can't be shaped. Shape this run as if the glyph is
-//      // missing.
-//      run->font_params = font_params;
-//      run->shape.missing_glyph_count = 1;
-//      run->shape.glyph_count = 1;
-//      run->shape.glyphs.resize(run->shape.glyph_count);
-//      run->shape.glyph_to_char.resize(run->shape.glyph_count);
-//      run->shape.positions.resize(run->shape.glyph_count);
-//      // Keep width as zero since newline character doesn't have a width.
-//    } else {
-//      // This run needs shaping.
-//      need_shaping_runs.push_back(run);
-//    }
-//  }
-//  runs.swap(need_shaping_runs);
-//  if (runs.empty()) {
-//    RecordShapeRunsFallback(ShapeRunFallback::NO_FALLBACK);
-//    return;
-//  }
-
-//  // Keep a set of fonts already tried for shaping runs.
-//  std::set<SkFontID> fallback_fonts_already_tried;
-//  std::vector<Font> fallback_font_candidates;
-
-  // Shaping with primary configured fonts from font_list().
-  for (const Font& font : font_list().GetFonts()) {
-    internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
-    if (test_font_params.SetRenderParamsRematchFont(font, font.GetFontRenderParams()) &&
-        !FontWasAlreadyTried(test_font_params.skia_face, &fallback_fonts_already_tried)) {
-      ShapeRunsWithFont(text, test_font_params, &runs);
-      MarkFontAsTried(test_font_params.skia_face, &fallback_fonts_already_tried);
-      fallback_font_candidates.push_back(font);
-    }
-    if (runs.empty()) {
-      RecordShapeRunsFallback(ShapeRunFallback::NO_FALLBACK);
-      return;
-    }
-  }
-
-  const Font& primary_font = font_list().GetPrimaryFont();
-
-  // Find fallback fonts for the remaining runs using a worklist algorithm. Try
-  // to shape the first run by using GetFallbackFont(...) and then try shaping
-  // other runs with the same font. If the first font can't be shaped, remove it
-  // and continue with the remaining runs until the worklist is empty. The
-  // fallback font returned by GetFallbackFont(...) depends on the text of the
-  // run and the results may differ between runs.
-  std::vector<internal::TextRunHarfBuzz*> remaining_unshaped_runs;
-  while (!runs.empty()) {
-    Font fallback_font(primary_font);
-    bool fallback_found;
-    internal::TextRunHarfBuzz* current_run = *runs.begin();
-    {
-      SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontTime");
-      TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFont", "script",
-                   TRACE_STR_COPY(uscript_getShortName(font_params.script)));
-      const base::StringPiece16 run_text(&text[current_run->range.start()],
-                                         current_run->range.length());
-      fallback_found =
-          GetFallbackFont(primary_font, locale_, run_text, &fallback_font);
-    }
-
-    if (fallback_found) {
-      internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
-      if (test_font_params.SetRenderParamsOverrideSkiaFaceFromFont(
-              fallback_font, fallback_font.GetFontRenderParams()) &&
-          !FontWasAlreadyTried(test_font_params.skia_face,
-                               &fallback_fonts_already_tried)) {
-        ShapeRunsWithFont(text, test_font_params, &runs);
-        MarkFontAsTried(test_font_params.skia_face,
-                        &fallback_fonts_already_tried);
-      }
-    }
-
-    // Remove the first run if not fully shaped with its associated fallback
-    // font.
-    if (!runs.empty() && runs[0] == current_run) {
-      remaining_unshaped_runs.push_back(current_run);
-      runs.erase(runs.begin());
-    }
-  }
-  runs.swap(remaining_unshaped_runs);
-  if (runs.empty()) {
-    RecordShapeRunsFallback(ShapeRunFallback::FALLBACK);
-    return;
-  }
-
-  std::vector<Font> fallback_font_list;
-  {
-    SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontsTime");
-    TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFonts", "script",
-                 TRACE_STR_COPY(uscript_getShortName(font_params.script)));
-    fallback_font_list = GetFallbackFonts(primary_font);
-
-#if defined(OS_WIN)
-    // Append fonts in the fallback list of the fallback fonts.
-    // TODO(tapted): Investigate whether there's a case that benefits from this
-    // on Mac.
-    for (const auto& fallback_font : fallback_font_candidates) {
-      std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
-      fallback_font_list.insert(fallback_font_list.end(),
-                                fallback_fonts.begin(), fallback_fonts.end());
-    }
-
-    // Add Segoe UI and its associated linked fonts to the fallback font list to
-    // ensure that the fallback list covers the basic cases.
-    // http://crbug.com/467459. On some Windows configurations the default font
-    // could be a raster font like System, which would not give us a reasonable
-    // fallback font list.
-    Font segoe("Segoe UI", 13);
-    if (!FontWasAlreadyTried(segoe.platform_font()->GetNativeSkTypeface(),
-                             &fallback_fonts_already_tried)) {
-      std::vector<Font> default_fallback_families = GetFallbackFonts(segoe);
-      fallback_font_list.insert(fallback_font_list.end(),
-                                default_fallback_families.begin(),
-                                default_fallback_families.end());
-    }
-#endif
-  }
-
-  // Use a set to track the fallback fonts and avoid duplicate entries.
-  SCOPED_UMA_HISTOGRAM_LONG_TIMER(
-      "RenderTextHarfBuzz.ShapeRunsWithFallbackFontsTime");
-  TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRunsWithFallbackFonts",
-               "fonts_count", fallback_font_list.size());
-
-  // Try shaping with the fallback fonts.
-  for (const auto& font : fallback_font_list) {
-    std::string font_name = font.GetFontName();
-
-    FontRenderParamsQuery query;
-    query.families.push_back(font_name);
-    query.pixel_size = font_params.font_size;
-    query.style = font_params.italic ? Font::ITALIC : 0;
-    FontRenderParams fallback_render_params = GetFontRenderParams(query, NULL);
-    internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
-    if (test_font_params.SetRenderParamsOverrideSkiaFaceFromFont(
-            font, fallback_render_params) &&
-        !FontWasAlreadyTried(test_font_params.skia_face,
-                             &fallback_fonts_already_tried)) {
-      ShapeRunsWithFont(text, test_font_params, &runs);
-      MarkFontAsTried(test_font_params.skia_face,
-                      &fallback_fonts_already_tried);
-    }
-    if (runs.empty()) {
-      TRACE_EVENT_INSTANT2("ui", "RenderTextHarfBuzz::FallbackFont",
-                           TRACE_EVENT_SCOPE_THREAD, "font_name",
-                           TRACE_STR_COPY(font_name.c_str()),
-                           "primary_font_name", primary_font.GetFontName());
-      RecordShapeRunsFallback(ShapeRunFallback::FALLBACKS);
-      return;
-    }
-  }
-
-  for (internal::TextRunHarfBuzz*& run : runs) {
-    if (run->shape.missing_glyph_count == std::numeric_limits<size_t>::max()) {
-      run->shape.glyph_count = 0;
-      run->shape.width = 0.0f;
-    }
-  }
-
-  RecordShapeRunsFallback(ShapeRunFallback::FAILED);
-}
-
 // Shapes a single line of text without newline \r or \n characters.
-// Any line breaking or trimming should be done by the caller.
-void ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams const & fontParams)
+// Any line breaking/trimming should be done by the caller.
+TextRuns ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams const & fontParams)
 {
   ASSERT(!utf8.empty(), ());
   // TODO(AB): Can unnecessary conversion/allocation be avoided?
   auto const utf16 = strings::ToUtf16(utf8);
-  for (auto const & run : ItemizeTextToRuns(utf16))
-  {
-    //internal::TextRunHarfBuzz::FontParams font_params = iter->first;
-    //font_params.ComputeRenderParamsFontSizeAndBaselineOffset();
-    ShapeRuns(utf16, lang, fontParams, run);
-  }
+  auto textRuns = GetTextLineRuns(utf16);
+  ShapeRuns(utf16, lang, fontParams, textRuns);
 }
