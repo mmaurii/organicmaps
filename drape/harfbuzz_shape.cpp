@@ -219,116 +219,130 @@ struct FontParams {
   int8_t lang;
 };
 
-struct Runs
+class Font
+{
+
+};
+
+struct TextRun
 {
   int32_t start, end;
   Font * font;
 };
 
-Runs GetTextLineRuns(std::u16string const & text)
+struct TextRuns
+{
+  buffer_vector<TextRun, 5> runs;
+};
+
+TextRuns GetSingleTextLineRuns(std::u16string const & text)
 {
   ASSERT(!text.empty(), ());
+  ASSERT_EQUAL(text.find_first_of(u"\r\n"), std::string::npos, ("Processing only single lines of text"));
   auto const textLength = static_cast<int32_t>(text.length());
+
+  TextRuns runs;
 
   // Deliberately not checking for nullptr.
   thread_local static UBiDi * const bidi = ubidi_open();
   UErrorCode error = U_ZERO_ERROR;
-  ubidi_setPara(bidi, text.data(), textLength, UBIDI_DEFAULT_LTR, nullptr, &error);
+  ::ubidi_setPara(bidi, text.data(), textLength, UBIDI_DEFAULT_LTR, nullptr, &error);
   if (U_FAILURE(error))
   {
     LOG(LERROR, ("ubidi_setPara failed with code", error));
     auto font = nullptr; // default font
-    return {0, textLength, font};
+    runs.runs.push_back({0, textLength, font});
+    return runs;
   }
-
-  // Iterator to split ranged styles and baselines. The color attributes don't
-  // break text runs to keep ligature between graphemes (e.g. Arabic word).
-  //internal::StyleIterator style = GetLayoutTextStyleIterator();
 
   // Split the original text by logical runs, then each logical run by common
   // script and each sequence at special characters and style boundaries. This
-  // invariant holds: bidi_run_start <= script_run_start <= breaking_run_start
-  // <= breaking_run_end <= script_run_end <= bidi_run_end
-  for (int32_t bidi_run_start = 0; bidi_run_start < textLength;) {
+  // invariant holds: bidi_run_start <= script_run_start <= breakingRunStart
+  // <= breakingRunEnd <= script_run_end <= bidi_run_end
+  for (int32_t bidiRunStart = 0; bidiRunStart < textLength;)
+  {
     // Determine the longest logical run (e.g. same bidi direction) from this point.
-    int32_t bidi_run_break = 0;
-    UBiDiLevel bidi_level = 0;
-    ubidi_getLogicalRun(bidi, bidi_run_start, &bidi_run_break, &bidi_level);
-    int32_t const bidi_run_end = bidi_run_break;
-    ASSERT_LESS(bidi_run_start, bidi_run_end, ());
+    int32_t bidiRunBreak = 0;
+    UBiDiLevel bidiLevel = 0;
+    ::ubidi_getLogicalRun(bidi, bidiRunStart, &bidiRunBreak, &bidiLevel);
+    int32_t const bidiRunEnd = bidiRunBreak;
+    ASSERT_LESS(bidiRunStart, bidiRunEnd, ());
 
-    for (int32_t script_run_start = bidi_run_start; script_run_start < bidi_run_end;) {
+    for (int32_t scriptRunStart = bidiRunStart; scriptRunStart < bidiRunEnd;)
+    {
       // Find the longest sequence of characters that have at least one common UScriptCode value.
       UScriptCode script = USCRIPT_INVALID_CODE;
-      size_t const script_run_end = ScriptInterval(text, script_run_start,
-                         bidi_run_end - script_run_start, &script) + script_run_start;
-      ASSERT_LESS(script_run_start, script_run_end, ());
+      size_t const scriptRunEnd = ScriptInterval(text, scriptRunStart, bidiRunEnd - scriptRunStart, &script) + scriptRunStart;
+      ASSERT_LESS(scriptRunStart, scriptRunEnd, ());
 
       // TODO(AB): May need to break on different unicode blocks, parentheses, and control chars (spaces).
 
-//      for (size_t breaking_run_start = script_run_start; breaking_run_start < script_run_end;) {
+//      for (size_t breakingRunStart = scriptRunStart; breakingRunStart < scriptRunEnd;) {
 //        // Find the break boundary for style. The style won't break a grapheme
 //        // since the style of the first character is applied to the whole
 //        // grapheme.
-//        style.IncrementToPosition(breaking_run_start);
+//        style.IncrementToPosition(breakingRunStart);
 //        size_t text_style_end = style.GetTextBreakingRange().end();
 
         // Break runs at certain characters that need to be rendered separately
         // to prevent an unusual character from forcing a fallback font on the
         // entire run. After script intersection, many codepoints end up in the
         // script COMMON but can't be rendered together.
-//        size_t breaking_run_end = FindRunBreakingCharacter(
-//            text, script, breaking_run_start, text_style_end, script_run_end);
+//        size_t breakingRunEnd = FindRunBreakingCharacter(
+//            text, script, breakingRunStart, text_style_end, scriptRunEnd);
 //
-//        DCHECK_LT(breaking_run_start, breaking_run_end);
-//        DCHECK(IsValidCodePointIndex(text, breaking_run_end));
+//        DCHECK_LT(breakingRunStart, breakingRunEnd);
+//        DCHECK(IsValidCodePointIndex(text, breakingRunEnd));
 
         // Set the font params for the current run for the current run break.
-        internal::TextRunHarfBuzz::FontParams font_params =
-            CreateFontParams(primary_font, bidi_level, script);
+//        internal::TextRunHarfBuzz::FontParams font_params =
+//            CreateFontParams(primary_font, bidiLevel, script);
 
-        // Create the current run from [breaking_run_start, breaking_run_end[.
+        // Create the current run from [breakingRunStart, breakingRunEnd[.
         auto run = std::make_unique<internal::TextRunHarfBuzz>(primary_font);
-        //run->range = Range(breaking_run_start, breaking_run_end);
-        run->range = Range(script_run_start, script_run_end);
+        //run->range = Range(breakingRunStart, breakingRunEnd);
+        run->range = Range(scriptRunStart, scriptRunEnd);
 
         // Add the created run to the set of runs.
         (*out_commonized_run_map)[font_params].push_back(run.get());
         //out_run_list->Add(std::move(run));
 
 //        // Move to the next run.
-//        breaking_run_start = breaking_run_end;
+//        breakingRunStart = breakingRunEnd;
 //      }
 
       // Move to the next script sequence.
-      script_run_start = script_run_end;
+        scriptRunStart = scriptRunEnd;
     }
 
     // Move to the next direction sequence.
-    bidi_run_start = bidi_run_end;
+    bidiRunStart = bidiRunEnd;
   }
 }
 
 // A copy of hb_icu_script_to_script to avoid direct ICU dependency.
-hb_script_t ICUScriptToHarfbuzzScript(UScriptCode script) {
+hb_script_t ICUScriptToHarfbuzzScript(UScriptCode script)
+{
     if (script == USCRIPT_INVALID_CODE)
       return HB_SCRIPT_INVALID;
     return hb_script_from_string(uscript_getShortName (script), -1);
 }
 
-hb_language_t OrganicMapsLanguageToHarfbuzzLanguage(int8_t lang) {
+hb_language_t OrganicMapsLanguageToHarfbuzzLanguage(int8_t lang)
+{
     // TODO(AB): can langs be converted faster?
-    auto const langsv = StringUtf8Multilang::GetLangByCode(lang);
-    auto const hbLanguage = hb_language_from_string(sv.data(), sv.size());
+    auto const svLang = StringUtf8Multilang::GetLangByCode(lang);
+    auto const hbLanguage = hb_language_from_string(svLang.data(), static_cast<int>(svLang.size()));
     if (hbLanguage == HB_LANGUAGE_INVALID)
       return hb_language_get_default();
     return hbLanguage;
 }
 
 // We treat HarfBuzz ints as 16.16 fixed-point.
-static const int kHbUnit1 = 1 << 16;
+static constexpr int kHbUnit1 = 1 << 16;
 
-int SkiaScalarToHarfBuzzUnits(SkScalar value) {
+int SkiaScalarToHarfBuzzUnits(SkScalar value)
+{
     return base::saturated_cast<int>(value * kHbUnit1);
 }
 
@@ -338,7 +352,7 @@ SkScalar HarfBuzzUnitsToSkiaScalar(int value) {
 }
 
 float HarfBuzzUnitsToFloat(int value) {
-    static const float kFloatToHbRatio = 1.0f / kHbUnit1;
+    static constexpr float kFloatToHbRatio = 1.0f / kHbUnit1;
     return kFloatToHbRatio * value;
 }
 
@@ -467,15 +481,6 @@ void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLe
 
 
 
-class TextRuns
-{
-
-};
-
-class Font
-{
-
-};
 
 void ShapeRuns(const std::u16string& text, int8_t lang, FontParams const & fontParams, TextRuns& runs)
 {
@@ -504,6 +509,6 @@ TextRuns ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams cons
   ASSERT(!utf8.empty(), ());
   // TODO(AB): Can unnecessary conversion/allocation be avoided?
   auto const utf16 = strings::ToUtf16(utf8);
-  auto textRuns = GetTextLineRuns(utf16);
+  auto textRuns = GetSingleTextLineRuns(utf16);
   ShapeRuns(utf16, lang, fontParams, textRuns);
 }
