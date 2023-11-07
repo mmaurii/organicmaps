@@ -58,6 +58,9 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment
   private TwoStatePreference mTtsPrefEnabled;
   @Nullable
   private ListPreference mTtsPrefLanguages;
+  private TwoStatePreference mTtsPrefStreetNames;
+  @Nullable
+  private ListPreference mPrefLanguages;
   @Nullable
   private Preference mTtsLangInfo;
   @Nullable
@@ -144,6 +147,17 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment
       mTtsPrefEnabled.setOnPreferenceChangeListener(enable ? mEnabledListener : null);
     if (mTtsPrefLanguages != null)
       mTtsPrefLanguages.setOnPreferenceChangeListener(enable ? mLangListener : null);
+    if (mTtsPrefStreetNames != null) {
+      mTtsPrefStreetNames.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+          boolean newVal = (Boolean) newValue;
+          TtsPlayer.setAnnounceStreets(newVal);
+
+          return true;
+        }
+      });
+    }
   }
 
   private void setLanguage(@NonNull LanguageData lang)
@@ -281,6 +295,7 @@ public class SettingsPrefsFragment extends BaseXmlSettingsFragment
     {
       // Initialize TTS preferences screen.
       mTtsPrefEnabled = getPreference(getString(R.string.pref_tts_enabled));
+      mTtsPrefStreetNames = findPreference(getString(R.string.pref_tts_street_names));
       mTtsPrefLanguages = getPreference(getString(R.string.pref_tts_language));
       mTtsLangInfo = getPreference(getString(R.string.pref_tts_info));
       mTtsVoiceTest = getPreference(getString(R.string.pref_tts_test_voice));

@@ -283,6 +283,18 @@ std::u16string ToUtf16(std::string_view utf8)
   return utf16;
 }
 
+UniString Substring(UniString const & str, size_t start, size_t length)
+{
+  // Ensure start is within bounds
+  if (start >= str.size())
+    return UniString();
+
+  // Adjust length to not exceed the string size
+  length = std::min(length, str.size() - start);
+
+  return UniString(str.begin() + start, str.begin() + start + length);
+}
+
 bool IsASCIIString(std::string_view sv)
 {
   for (auto c : sv)

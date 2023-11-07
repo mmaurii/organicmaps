@@ -1,6 +1,7 @@
 #pragma once
 
 #include "platform/get_text_by_id.hpp"
+#include "base/string_utils.hpp"
 
 #include <memory>
 #include <string>
@@ -42,7 +43,11 @@ private:
 
   std::unique_ptr<platform::GetTextById> m_getCurLang;
 };
-
+/// \brief Decides if a string ends in all uppercase or numbers (no lowercase before a space)
+/// @param std::string const & myString - an unknown string like "Main Street" or "Highway 50"
+/// \note Used for Hungarian so we don't need to worry about Unicode numerics, only ASCII
+/// @return true - only uppercase and numbers before ending space; false - lowercase ending word
+bool EndsInAcronymOrNum(strings::UniString const & myUniStr);
 /// Generates text message id about the distance of the notification. For example: In 300 meters.
 std::string GetDistanceTextId(Notification const & notification);
 /// Generates text message id for roundabouts.
