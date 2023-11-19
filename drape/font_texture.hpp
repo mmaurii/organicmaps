@@ -60,17 +60,17 @@ class GlyphInfo : public Texture::ResourceInfo
   using Base = Texture::ResourceInfo;
 
 public:
-  GlyphInfo(m2::RectF const & texRect, GlyphManager::GlyphMetrics const & metrics)
+  GlyphInfo(m2::RectF const & texRect, GlyphMetrics const & metrics)
     : Base(texRect)
     , m_metrics(metrics)
   {}
   ~GlyphInfo() override = default;
 
   Texture::ResourceType GetType() const override { return Texture::ResourceType::Glyph; }
-  GlyphManager::GlyphMetrics const & GetMetrics() const { return m_metrics; }
+  GlyphMetrics const & GetMetrics() const { return m_metrics; }
 
 private:
-  GlyphManager::GlyphMetrics m_metrics;
+  GlyphMetrics m_metrics;
 };
 
 class GlyphIndex : public GlyphGenerator::Listener
@@ -103,7 +103,7 @@ private:
   ref_ptr<GlyphGenerator> m_generator;
 
   using ResourceMapping = std::map<GlyphKey, GlyphInfo>;
-  using PendingNode = std::pair<m2::RectU, GlyphManager::Glyph>;
+  using PendingNode = std::pair<m2::RectU, Glyph>;
   using PendingNodes = std::vector<PendingNode>;
 
   ResourceMapping m_index;

@@ -50,7 +50,7 @@ void GlyphGenerator::UnregisterListener(ref_ptr<GlyphGenerator::Listener> listen
 }
 
 void GlyphGenerator::GenerateGlyph(ref_ptr<Listener> listener, m2::RectU const & rect,
-                                   GlyphManager::Glyph & glyph)
+                                   Glyph & glyph)
 {
   GenerateGlyph(listener, GlyphGenerationData(rect, glyph));
 }

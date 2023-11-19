@@ -192,10 +192,10 @@ public:
     //////////////////////////////////////////////////////////////
     printf("Old drape code\n\n");
 
-    std::vector<dp::GlyphManager::Glyph> glyphs;
+    std::vector<dp::Glyph> glyphs;
     auto generateGlyph = [this, &glyphs](strings::UniChar c)
     {
-      dp::GlyphManager::Glyph g = m_mng->GetGlyph(c, kFontSize);
+      dp::Glyph g = m_mng->GetGlyph(c, kFontSize);
       glyphs.push_back(dp::GlyphManager::GenerateGlyph(g, m_mng->GetSdfScale()));
       g.m_image.Destroy();
     };
