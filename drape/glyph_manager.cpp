@@ -300,6 +300,15 @@ GlyphManager::GlyphManager(Params const & params)
       LOG_SHORT(LDEBUG, (b.m_name, "is in", params.m_fonts[ind]));
     }
   }
+
+
+  // tmp
+  std::ifstream names("/Users/alex/Developer/omim/rust-extract/sorted_unique.txt");
+  std::string line;
+  while (names.good()) {
+    std::getline(names, line);
+    
+  }
 }
 
 uint32_t GlyphManager::GetBaseGlyphHeight() const
