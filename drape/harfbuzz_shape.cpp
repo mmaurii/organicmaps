@@ -230,10 +230,7 @@ struct TextRun
   Font * font;
 };
 
-struct TextRuns
-{
-  buffer_vector<TextRun, 5> runs;
-};
+typedef buffer_vector<TextRun, 5> TextRuns;
 
 TextRuns GetSingleTextLineRuns(std::u16string const & text)
 {
@@ -251,7 +248,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
   {
     LOG(LERROR, ("ubidi_setPara failed with code", error));
     auto font = nullptr; // default font
-    runs.runs.push_back({0, textLength, font});
+    runs.push_back({0, textLength, font});
     return runs;
   }
 
@@ -299,12 +296,16 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
 //            CreateFontParams(primary_font, bidiLevel, script);
 
         // Create the current run from [breakingRunStart, breakingRunEnd[.
-        auto run = std::make_unique<internal::TextRunHarfBuzz>(primary_font);
+        //auto run = std::make_unique<internal::TextRunHarfBuzz>(primary_font);
         //run->range = Range(breakingRunStart, breakingRunEnd);
-        run->range = Range(scriptRunStart, scriptRunEnd);
+        //run->range = Range(scriptRunStart, scriptRunEnd);
+        TextRun run;
+        run.start = scriptRunStart;
+        run.end = scriptRunEnd;
+        runs.push_back(run);
 
         // Add the created run to the set of runs.
-        (*out_commonized_run_map)[font_params].push_back(run.get());
+        //(*out_commonized_run_map)[font_params].push_back(run.get());
         //out_run_list->Add(std::move(run));
 
 //        // Move to the next run.
@@ -318,6 +319,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
     // Move to the next direction sequence.
     bidiRunStart = bidiRunEnd;
   }
+  return runs;
 }
 
 // A copy of hb_icu_script_to_script to avoid direct ICU dependency.
@@ -468,10 +470,6 @@ void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLe
   hb_buffer_destroy(buffer);
   hb_font_destroy(harfbuzz_font);
 }
-
-
-
-
 
 
 
