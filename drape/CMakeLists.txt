@@ -186,3 +186,6 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 omim_add_test_subdirectory(drape_tests)
+
+add_subdirectory(fonts_tool)
+#omim_add_tool_subdirectory(fonts_tool)
