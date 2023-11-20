@@ -28,7 +28,7 @@ public:
 
   bool HasGlyph(strings::UniChar unicodePoint) const;
   Glyph GetGlyph(strings::UniChar unicodePoint, uint32_t baseHeight, bool isSdf) const;
-  void GetCharcodes(std::vector<FT_ULong> & charcodes);
+  void GetCharcodes(std::vector<FT_ULong> & charcodes) const;
 
   static unsigned long Read(FT_Stream stream, unsigned long offset, unsigned char * buffer, unsigned long count);
   static void Close(FT_Stream);

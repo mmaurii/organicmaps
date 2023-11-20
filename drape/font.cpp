@@ -128,7 +128,7 @@ Glyph Font::GetGlyph(strings::UniChar unicodePoint, uint32_t baseHeight, bool is
   return result;
 }
 
-void Font::GetCharcodes(std::vector<FT_ULong> & charcodes)
+void Font::GetCharcodes(std::vector<FT_ULong> & charcodes) const
 {
   FT_UInt gindex;
   charcodes.push_back(FT_Get_First_Char(m_fontFace, &gindex));
