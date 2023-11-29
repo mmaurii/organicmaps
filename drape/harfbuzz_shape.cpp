@@ -219,15 +219,10 @@ struct FontParams {
   int8_t lang;
 };
 
-class Font
-{
-
-};
-
 struct TextRun
 {
   int32_t start, end;
-  Font * font;
+  int font;
 };
 
 typedef buffer_vector<TextRun, 5> TextRuns;
@@ -417,7 +412,7 @@ void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLe
   unsigned int glyph_count = 0;
   hb_glyph_info_t * infos = hb_buffer_get_glyph_infos(buffer, &glyph_count);
   out->glyph_count = glyph_count;
-  hb_glyph_position_t * hb_positions = hb_buffer_get_glyph_positions(buffer, nullptr);
+  hb_glyph_position_t const * hb_positions = hb_buffer_get_glyph_positions(buffer, nullptr);
   out->glyphs.resize(out->glyph_count);
   out->glyph_to_char.resize(out->glyph_count);
   out->positions.resize(out->glyph_count);
@@ -509,4 +504,5 @@ TextRuns ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams cons
   auto const utf16 = strings::ToUtf16(utf8);
   auto textRuns = GetSingleTextLineRuns(utf16);
   ShapeRuns(utf16, lang, fontParams, textRuns);
+  return textRuns;
 }
