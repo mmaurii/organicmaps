@@ -1,4 +1,5 @@
 #include "base/assert.hpp"
+#include "base/math.hpp"
 #include "base/string_utils.hpp"
 
 #include <string>
@@ -338,14 +339,12 @@ hb_language_t OrganicMapsLanguageToHarfbuzzLanguage(int8_t lang)
 // We treat HarfBuzz ints as 16.16 fixed-point.
 static constexpr int kHbUnit1 = 1 << 16;
 
-int SkiaScalarToHarfBuzzUnits(SkScalar value)
+int FloatToHarfBuzzUnits(float value)
 {
-    return base::saturated_cast<int>(value * kHbUnit1);
-}
-
-SkScalar HarfBuzzUnitsToSkiaScalar(int value) {
-    static const SkScalar kSkToHbRatio = SK_Scalar1 / kHbUnit1;
-    return kSkToHbRatio * value;
+  auto floatRes = value * kHbUnit1;
+  auto const intRes = static_cast<int>(floatRes);
+  ASSERT(math::AlmostEqualAbs(floatRes, static_cast<float>(intRes), 1.0-e20));
+  return intRes;
 }
 
 float HarfBuzzUnitsToFloat(int value) {
@@ -373,7 +372,7 @@ hb_font_t* CreateHarfbuzzFont(Font const & font, int textSize, const FontRenderP
     DCHECK(typeface_data->second.face());
     hb_font_t* harfbuzz_font = hb_font_create(typeface_data->second.face());
 
-    const int scale = SkiaScalarToHarfBuzzUnits(text_size);
+    const int scale = FloatToHarfBuzzUnits(text_size);
     hb_font_set_scale(harfbuzz_font, scale, scale);
     FontData* hb_font_data = new FontData(typeface_data->second.glyphs());
     hb_font_data->font_.setTypeface(std::move(skia_face));
@@ -436,11 +435,11 @@ void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLe
       out->missing_glyph_count += 1;
     //DCHECK_GE(infos[i].cluster, in.range.start());
     //out->glyph_to_char[i] = infos[i].cluster - in.range.start();
-    const SkScalar x_offset =
+    const float x_offset =
         force_zero_offset ? 0
-                          : HarfBuzzUnitsToSkiaScalar(hb_positions[i].x_offset);
-    const SkScalar y_offset =
-        HarfBuzzUnitsToSkiaScalar(hb_positions[i].y_offset);
+                          : HarfBuzzUnitsToFloat(hb_positions[i].x_offset);
+    const float y_offset =
+        HarfBuzzUnitsToFloat(hb_positions[i].y_offset);
     out->positions[i].set(out->width + x_offset, -y_offset);
 
     if (in.glyph_width_for_test == 0)
