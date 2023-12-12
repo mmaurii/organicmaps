@@ -243,7 +243,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
   if (U_FAILURE(error))
   {
     LOG(LERROR, ("ubidi_setPara failed with code", error));
-    auto font = nullptr; // default font
+    auto const font = 0; // default font
     runs.push_back({0, textLength, font});
     return runs;
   }
@@ -343,7 +343,7 @@ int FloatToHarfBuzzUnits(float value)
 {
   auto floatRes = value * kHbUnit1;
   auto const intRes = static_cast<int>(floatRes);
-  ASSERT(math::AlmostEqualAbs(floatRes, static_cast<float>(intRes), 1.0-e20));
+  //ASSERT(math::AlmostEqualAbs(floatRes, static_cast<float>(intRes), 1.0-e20), ());
   return intRes;
 }
 
@@ -352,6 +352,8 @@ float HarfBuzzUnitsToFloat(int value) {
     return kFloatToHbRatio * value;
 }
 
+typedef int Font;
+/*
 hb_font_t* CreateHarfbuzzFont(Font const & font, int textSize, const FontRenderParams& params,
                                bool subpixel_rendering_suppressed) {
     // A cache from Skia font to harfbuzz typeface information.
@@ -385,7 +387,8 @@ hb_font_t* CreateHarfbuzzFont(Font const & font, int textSize, const FontRenderP
     hb_font_make_immutable(harfbuzz_font);
     return harfbuzz_font;
 }
-
+*/
+/*
 void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLength, UScriptCode script, bool isRtl, int8_t lang,
                       TextRunHarfBuzz::ShapeOutput* out) {
   hb_font_t* harfbuzz_font = CreateHarfBuzzFont(in.skia_face, SkIntToScalar(in.font_size),
@@ -465,6 +468,7 @@ void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLe
   hb_font_destroy(harfbuzz_font);
 }
 
+*/
 
 
 
@@ -472,8 +476,7 @@ void ShapeRunWithFont(std::u16string_view const & text, int runOffset, int runLe
 
 
 
-
-
+/*
 void ShapeRuns(const std::u16string& text, int8_t lang, FontParams const & fontParams, TextRuns& runs)
 {
   for (auto & run : runs)
@@ -493,7 +496,7 @@ void ShapeRuns(const std::u16string& text, int8_t lang, FontParams const & fontP
   }
   in_out_runs->swap(runs_with_missing_glyphs);
 }
-
+*/
 // Shapes a single line of text without newline \r or \n characters.
 // Any line breaking/trimming should be done by the caller.
 TextRuns ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams const & fontParams)
@@ -502,6 +505,7 @@ TextRuns ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams cons
   // TODO(AB): Can unnecessary conversion/allocation be avoided?
   auto const utf16 = strings::ToUtf16(utf8);
   auto textRuns = GetSingleTextLineRuns(utf16);
-  ShapeRuns(utf16, lang, fontParams, textRuns);
+
+  //ShapeRuns(utf16, lang, fontParams, textRuns);
   return textRuns;
 }
