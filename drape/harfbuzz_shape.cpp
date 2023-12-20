@@ -5,6 +5,7 @@
 #include <string>
 
 #include <hb.h>
+#include <hb-icu.h>
 #include <unicode/ubidi.h>  // ubidi_open, ubidi_setPara
 #include <unicode/uscript.h>  // UScriptCode
 #include <unicode/utf16.h>  // U16_NEXT
@@ -223,10 +224,11 @@ struct FontParams {
 struct TextRun
 {
   int32_t start, end;
+  hb_script_t script;
   int font;
 };
 
-typedef buffer_vector<TextRun, 5> TextRuns;
+typedef buffer_vector<TextRun, 10> TextRuns;
 
 TextRuns GetSingleTextLineRuns(std::u16string const & text)
 {
@@ -244,7 +246,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
   {
     LOG(LERROR, ("ubidi_setPara failed with code", error));
     auto const font = 0; // default font
-    runs.push_back({0, textLength, font});
+    runs.push_back({0, textLength, HB_SCRIPT_UNKNOWN, font});
     return runs;
   }
 
@@ -298,6 +300,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
         TextRun run;
         run.start = scriptRunStart;
         run.end = scriptRunEnd;
+        run.script = hb_icu_script_to_script(script);
         runs.push_back(run);
 
         // Add the created run to the set of runs.
