@@ -228,7 +228,16 @@ struct TextRun
   int font;
 };
 
-typedef buffer_vector<TextRun, 10> TextRuns;
+typedef std::vector<TextRun> TextRuns;
+//typedef buffer_vector<TextRun, 10> TextRuns;
+
+// A copy of hb_icu_script_to_script to avoid direct ICU dependency.
+hb_script_t ICUScriptToHarfbuzzScript(UScriptCode script)
+{
+  if (script == USCRIPT_INVALID_CODE)
+    return HB_SCRIPT_INVALID;
+  return hb_script_from_string(uscript_getShortName (script), -1);
+}
 
 TextRuns GetSingleTextLineRuns(std::u16string const & text)
 {
@@ -239,7 +248,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
   TextRuns runs;
 
   // Deliberately not checking for nullptr.
-  thread_local static UBiDi * const bidi = ubidi_open();
+  thread_local UBiDi * const bidi = ubidi_open();
   UErrorCode error = U_ZERO_ERROR;
   ::ubidi_setPara(bidi, text.data(), textLength, UBIDI_DEFAULT_LTR, nullptr, &error);
   if (U_FAILURE(error))
@@ -268,7 +277,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
       // Find the longest sequence of characters that have at least one common UScriptCode value.
       UScriptCode script = USCRIPT_INVALID_CODE;
       size_t const scriptRunEnd = ScriptInterval(text, scriptRunStart, bidiRunEnd - scriptRunStart, &script) + scriptRunStart;
-      ASSERT_LESS(scriptRunStart, scriptRunEnd, ());
+      ASSERT_LESS(scriptRunStart, base::asserted_cast<int32_t>(scriptRunEnd), ());
 
       // TODO(AB): May need to break on different unicode blocks, parentheses, and control chars (spaces).
 
@@ -300,7 +309,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
         TextRun run;
         run.start = scriptRunStart;
         run.end = scriptRunEnd;
-        run.script = hb_icu_script_to_script(script);
+        run.script = ICUScriptToHarfbuzzScript(script);
         runs.push_back(run);
 
         // Add the created run to the set of runs.
@@ -319,14 +328,6 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
     bidiRunStart = bidiRunEnd;
   }
   return runs;
-}
-
-// A copy of hb_icu_script_to_script to avoid direct ICU dependency.
-hb_script_t ICUScriptToHarfbuzzScript(UScriptCode script)
-{
-    if (script == USCRIPT_INVALID_CODE)
-      return HB_SCRIPT_INVALID;
-    return hb_script_from_string(uscript_getShortName (script), -1);
 }
 
 hb_language_t OrganicMapsLanguageToHarfbuzzLanguage(int8_t lang)

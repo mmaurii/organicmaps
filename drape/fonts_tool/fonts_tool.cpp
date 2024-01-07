@@ -18,8 +18,10 @@ struct TextRun
 };
 
 
-typedef buffer_vector<TextRun, 5> TextRuns;
-struct FontParams {
+//typedef buffer_vector<TextRun, 5> TextRuns;
+typedef std::vector<TextRun> TextRuns;
+struct FontParams
+{
   int pixelSize;
   int8_t lang;
 };
@@ -73,15 +75,15 @@ int main(int argc, char** argv)
       if (line.empty()) continue;
 
       auto const runs = ItemizeAndShapeText(line, 0, FontParams{});
-      std::cout << line << "\n";
-      size_t pos = 0;
-      for (size_t i = 0; i < runs.size(); ++i)
+      std::cout << line << " (len=" << line.size() << ")" << "\n";
+      //size_t pos = 0;
+//      for (size_t i = 0; i < runs.size(); ++i)
       {
-        auto const & run = runs[i];
-        std::cout << run.start << "-" << run.end << " ";
+        // auto const & run = runs[i];
+        // std::cout << run.start << "-" << run.end << " ";
         // while (pos++ < run.end)
         // {
-        //   std::cout << i + 1;
+        //   std::cou9opp[t << i + 1;
         // }
       }
       std::cout << "\n";

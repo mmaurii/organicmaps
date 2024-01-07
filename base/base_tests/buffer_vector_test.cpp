@@ -7,7 +7,7 @@
 #include <memory>
 #include <numeric>
 
-namespace
+namespace buffer_vector_test
 {
   template <class TCont>
   void CheckVector(TCont & cont, size_t count)
@@ -16,7 +16,6 @@ namespace
     for (size_t i = 0; i < count; ++i)
       TEST_EQUAL ( cont[i], i, () );
   }
-}
 
 UNIT_TEST(BufferVector_PushBackAndRealloc)
 {
@@ -414,3 +413,25 @@ UNIT_TEST(BufferVector_Erase)
       TEST_EQUAL(v1[i], v2[i], ());
   }
 }
+
+typedef buffer_vector<int, 10> TReturnedVector;
+TReturnedVector TestVecReturn(int size)
+{
+  buffer_vector<int, 10> v;
+  for (int i = 0; i < size; ++i)
+    v.push_back(i);
+  return v;
+}
+
+UNIT_TEST(BufferVector_ReturnFromAFunction)
+{
+  for (int i = 0; i < 100; ++i)
+  {
+    auto const v = TestVecReturn(i);
+    TEST_EQUAL(v.size(), i, ());
+    for (int j = 0; j < i; ++j)
+      TEST_EQUAL(v[j], j, ());
+    }
+}
+
+}  // namespace buffer_vector_test
