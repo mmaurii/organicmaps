@@ -2,6 +2,8 @@
 #include "base/math.hpp"
 #include "base/string_utils.hpp"
 
+#include "drape/harfbuzz_shape.hpp"
+
 #include <string>
 
 #include <hb.h>
@@ -194,7 +196,7 @@ private:
 // Consider 3 characters with the script values {Kana}, {Hira, Kana}, {Kana}.
 // Without script extensions only the first script in each set would be taken
 // into account, resulting in 3 runs where 1 would be enough.
-size_t ScriptInterval(std::u16string const & text, size_t start, size_t length, UScriptCode* script)
+size_t ScriptInterval(std::u16string const & text, int32_t start, size_t length, UScriptCode* script)
 {
   ASSERT_GREATER(length, 0U, ());
   UScriptCode scripts[kMaxScripts] = { USCRIPT_INVALID_CODE };
@@ -215,21 +217,6 @@ size_t ScriptInterval(std::u16string const & text, size_t start, size_t length, 
   *script = scripts[0];
   return length;
 }
-
-struct FontParams {
-  int pixelSize;
-  int8_t lang;
-};
-
-struct TextRun
-{
-  int32_t start, end;
-  hb_script_t script;
-  int font;
-};
-
-typedef std::vector<TextRun> TextRuns;
-//typedef buffer_vector<TextRun, 10> TextRuns;
 
 // A copy of hb_icu_script_to_script to avoid direct ICU dependency.
 hb_script_t ICUScriptToHarfbuzzScript(UScriptCode script)
@@ -255,7 +242,7 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
   {
     LOG(LERROR, ("ubidi_setPara failed with code", error));
     auto const font = 0; // default font
-    runs.push_back({0, textLength, HB_SCRIPT_UNKNOWN, font});
+    runs.emplace_back(0, textLength, HB_SCRIPT_UNKNOWN, font);
     return runs;
   }
 
@@ -306,11 +293,12 @@ TextRuns GetSingleTextLineRuns(std::u16string const & text)
         //auto run = std::make_unique<internal::TextRunHarfBuzz>(primary_font);
         //run->range = Range(breakingRunStart, breakingRunEnd);
         //run->range = Range(scriptRunStart, scriptRunEnd);
-        TextRun run;
-        run.start = scriptRunStart;
-        run.end = scriptRunEnd;
-        run.script = ICUScriptToHarfbuzzScript(script);
-        runs.push_back(run);
+//        TextRun run;
+//        run.start = scriptRunStart;
+//        run.end = scriptRunEnd;
+//        run.script = ICUScriptToHarfbuzzScript(script);
+//        runs.push_back(run);
+      runs.emplace_back(scriptRunStart, base::asserted_cast<int32_t>(scriptRunEnd), ICUScriptToHarfbuzzScript(script), 0);
 
         // Add the created run to the set of runs.
         //(*out_commonized_run_map)[font_params].push_back(run.get());

@@ -57,6 +57,7 @@ set(SRC
   graphics_context_factory.cpp
   graphics_context_factory.hpp
   harfbuzz_shape.cpp
+  harfbuzz_shape.hpp
   hw_texture.cpp
   hw_texture.hpp
   index_buffer.cpp

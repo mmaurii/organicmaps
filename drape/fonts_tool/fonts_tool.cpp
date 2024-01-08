@@ -1,4 +1,5 @@
 #include "drape/font.hpp"
+#include "drape/harfbuzz_shape.hpp"
 
 #include "platform/platform.hpp"
 
@@ -11,23 +12,7 @@
 #include <iostream>
 #include FT_FREETYPE_H
 
-struct TextRun
-{
-  int32_t start, end;
-  int font;
-};
-
-
-//typedef buffer_vector<TextRun, 5> TextRuns;
-typedef std::vector<TextRun> TextRuns;
-struct FontParams
-{
-  int pixelSize;
-  int8_t lang;
-};
-
-
-TextRuns ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams const & fontParams);
+//TextRuns ItemizeAndShapeText(std::string_view utf8, int8_t lang, FontParams const & fontParams);
 
 int main(int argc, char** argv)
 {
@@ -75,7 +60,7 @@ int main(int argc, char** argv)
       if (line.empty()) continue;
 
       auto const runs = ItemizeAndShapeText(line, 0, FontParams{});
-      std::cout << line << " (len=" << line.size() << ")" << "\n";
+      std::cout << line << " (runs=" << runs.size() << ")" << "\n";
       //size_t pos = 0;
 //      for (size_t i = 0; i < runs.size(); ++i)
       {
