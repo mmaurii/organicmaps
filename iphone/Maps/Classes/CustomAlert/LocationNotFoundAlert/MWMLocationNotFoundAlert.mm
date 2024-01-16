@@ -9,15 +9,15 @@
 
 @implementation MWMLocationNotFoundAlert
 
-+ (instancetype)alertWithOkBlock:(MWMVoidBlock)okBlock
++ (instancetype)alertWithStopBlock:(MWMVoidBlock)stopBlock
 {
   MWMLocationNotFoundAlert * alert =
       [self defaultAlertWithTitle:L(@"current_location_unknown_title")
                           message:L(@"current_location_unknown_message")
                  rightButtonTitle:L(@"current_location_unknown_continue_button")
                   leftButtonTitle:L(@"current_location_unknown_stop_button")
-                rightButtonAction:okBlock
-                 leftButtonAction:nil
+                rightButtonAction:nil
+                 leftButtonAction:stopBlock
                               log:@"Location Not Found Alert"];
   [alert setNeedsCloseAlertAfterEnterBackground];
   [MWMLocationManager addObserver:alert];

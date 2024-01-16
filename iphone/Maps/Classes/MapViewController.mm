@@ -521,15 +521,14 @@ NSString *const kPP2BookmarkEditingSegue = @"PP2BookmarkEditing";
 }
 
 - (void)processMyPositionPendingTimeout {
-  [MWMLocationManager stop];
   NSArray<id<MWMLocationModeListener>> *objects = self.listeners.allObjects;
   for (id<MWMLocationModeListener> object in objects) {
     [object processMyPositionPendingTimeout];
   }
   BOOL const isMapVisible = (self.navigationController.visibleViewController == self);
   if (isMapVisible && ![MWMLocationManager isLocationProhibited]) {
-    [self.alertController presentLocationNotFoundAlertWithOkBlock:^{
-      GetFramework().SwitchMyPositionNextMode();
+    [self.alertController presentLocationNotFoundAlertWithStopBlock:^{
+      [MWMLocationManager stop];
     }];
   }
 }

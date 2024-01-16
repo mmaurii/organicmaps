@@ -61,8 +61,8 @@ static NSString *const kAlertControllerNibIdentifier = @"MWMAlertViewController"
   [self displayAlert:[MWMAlert locationServiceNotSupportedAlert]];
 }
 
-- (void)presentLocationNotFoundAlertWithOkBlock:(nonnull MWMVoidBlock)okBlock {
-  [self displayAlert:[MWMLocationNotFoundAlert alertWithOkBlock:okBlock]];
+- (void)presentLocationNotFoundAlertWithStopBlock:(nonnull MWMVoidBlock)stopBlock {
+  [self displayAlert:[MWMLocationNotFoundAlert alertWithStopBlock:stopBlock]];
 }
 
 - (void)presentNoConnectionAlert {
