@@ -526,7 +526,7 @@ NSString *const kPP2BookmarkEditingSegue = @"PP2BookmarkEditing";
     [object processMyPositionPendingTimeout];
   }
   BOOL const isMapVisible = (self.navigationController.visibleViewController == self);
-  if (isMapVisible && ![MWMLocationManager isLocationProhibited]) {
+  if (isMapVisible && ![MWMLocationManager isLocationProhibited] && UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
     [self.alertController presentLocationNotFoundAlertWithStopBlock:^{
       [MWMLocationManager stop];
     }];
