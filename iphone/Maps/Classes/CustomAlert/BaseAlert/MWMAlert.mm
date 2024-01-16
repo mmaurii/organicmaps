@@ -199,12 +199,14 @@
                             message:(NSString *)message
                    rightButtonTitle:(NSString *)rightButtonTitle
                     leftButtonTitle:(NSString *)leftButtonTitle
-                  rightButtonAction:(MWMVoidBlock)action {
+                  rightButtonAction:(MWMVoidBlock)rightButtonAction
+                   leftButtonAction:(MWMVoidBlock)leftButtonAction {
   return [MWMDefaultAlert defaultAlertWithTitle:title
                                         message:message
                                rightButtonTitle:rightButtonTitle
                                 leftButtonTitle:leftButtonTitle
-                              rightButtonAction:action
+                              rightButtonAction:rightButtonAction
+                               leftButtonAction:leftButtonAction
                                 log:nil];
 }
 

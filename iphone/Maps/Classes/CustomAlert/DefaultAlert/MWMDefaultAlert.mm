@@ -28,6 +28,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"downloader_retry")
                      leftButtonTitle:L(@"cancel")
                    rightButtonAction:retryBlock
+                    leftButtonAction:nil
                      log:@"Authorization Error Alert"];
 }
 
@@ -37,6 +38,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Route File Not Exist Alert"];
 }
 
@@ -46,6 +48,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Route File Not Exist Alert"];
 }
 
@@ -55,6 +58,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"transit_not_found"];
 }
 
@@ -64,6 +68,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Long Pedestrian Route Alert"];
 }
 
@@ -73,6 +78,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Location Service Not Supported Alert"];
 }
 
@@ -82,6 +88,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"ok")
                                        leftButtonTitle:nil
                                      rightButtonAction:nil
+                                      leftButtonAction:nil
                                        log:@"No Connection Alert"];
   [alert setNeedsCloseAlertAfterEnterBackground];
   return alert;
@@ -93,6 +100,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"choose_dates_online_only_dialog_cta")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:okBlock
+                                      leftButtonAction:nil
                                        log:@"No Connection Alert"];
   [alert setNeedsCloseAlertAfterEnterBackground];
   return alert;
@@ -104,6 +112,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"ok")
                                        leftButtonTitle:nil
                                      rightButtonAction:nil
+                                      leftButtonAction:nil
                                        log:@"Delete Map Prohibited Alert"];
   [alert setNeedsCloseAlertAfterEnterBackground];
   return alert;
@@ -115,6 +124,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"delete")
                      leftButtonTitle:L(@"cancel")
                    rightButtonAction:okBlock
+                    leftButtonAction:nil
                      log:@"Editor unsaved changes on delete"];
 }
 
@@ -124,6 +134,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"use_cellular_data")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:okBlock
+                                      leftButtonAction:nil
                                        log:@"No WiFi Alert"];
   alert.leftButtonAction = cancelBlock;
   [alert setNeedsCloseAlertAfterEnterBackground];
@@ -138,6 +149,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"End Point Not Found Alert"];
 }
 
@@ -149,6 +161,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Start Point Not Found Alert"];
 }
 
@@ -158,6 +171,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Intermediate Point Not Found Alert"];
 }
 
@@ -169,6 +183,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Internal Routing Error Alert"];
 }
 
@@ -178,6 +193,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Incorrect Feature Possition Alert"];
 }
 
@@ -187,6 +203,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Internal Error Alert"];
 }
 
@@ -196,6 +213,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"ok")
                                        leftButtonTitle:nil
                                      rightButtonAction:nil
+                                      leftButtonAction:nil
                                        log:@"Not Enough Space Alert"];
   [alert setNeedsCloseAlertAfterEnterBackground];
   return alert;
@@ -207,6 +225,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Invalid User Name or Password Alert"];
 }
 
@@ -218,6 +237,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"No Current Position Alert"];
 }
 
@@ -230,6 +250,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"turn_on")
                      leftButtonTitle:L(@"later")
                    rightButtonAction:action
+                    leftButtonAction:nil
                      log:@"Disabled Location Alert"];
 }
 
@@ -239,6 +260,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Points In Different MWM Alert"];
 }
 
@@ -249,6 +271,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                       rightButtonTitle:L(@"ok")
                        leftButtonTitle:L(@"cancel")
                      rightButtonAction:okBlock
+                      leftButtonAction:nil
                        log:@"Default Alert"];
   } else {
     return [self defaultAlertWithTitle:L(@"p2p_only_from_current")
@@ -256,6 +279,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                       rightButtonTitle:L(@"ok")
                        leftButtonTitle:nil
                      rightButtonAction:nil
+                      leftButtonAction:nil
                        log:@"Default Alert"];
   }
 }
@@ -266,6 +290,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"_disable")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:okBlock
+                                      leftButtonAction:nil
                                        log:@"Disable Auto Download Alert"];
   [alert setNeedsCloseAlertAfterEnterBackground];
   return alert;
@@ -277,6 +302,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"downloader_retry")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:okBlock
+                                      leftButtonAction:nil
                                        log:@"Downloader No Connection Alert"];
   alert.leftButtonAction = cancelBlock;
   [alert setNeedsCloseAlertAfterEnterBackground];
@@ -289,6 +315,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"close")
                                        leftButtonTitle:nil
                                      rightButtonAction:nil
+                                      leftButtonAction:nil
                                        log:@"Downloader Not Enough Space Alert"];
   [alert setNeedsCloseAlertAfterEnterBackground];
   return alert;
@@ -300,6 +327,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"downloader_retry")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:okBlock
+                                      leftButtonAction:nil
                                        log:@"Downloader Internal Error Alert"];
   alert.leftButtonAction = cancelBlock;
   [alert setNeedsCloseAlertAfterEnterBackground];
@@ -312,6 +340,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"downloader_status_outdated")
                                        leftButtonTitle:L(@"not_now")
                                      rightButtonAction:okBlock
+                                      leftButtonAction:nil
                                        log:@"Downloader Need Update Alert"];
   [alert setNeedsCloseAlertAfterEnterBackground];
   return alert;
@@ -323,6 +352,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"editor_reset_edits_button")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:block
+                                      leftButtonAction:nil
                                        log:@"Reset changes alert"];
   return alert;
 }
@@ -333,6 +363,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"editor_remove_place_button")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:block
+                                      leftButtonAction:nil
                                        log:@"Delete feature alert"];
   return alert;
 }
@@ -345,6 +376,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"editor_report_problem_send_button")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:block
+                                      leftButtonAction:nil
                                        log:@"Personal info warning alert"];
   return alert;
 }
@@ -355,6 +387,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"off_recent_track_background_button")
                                        leftButtonTitle:L(@"continue_download")
                                      rightButtonAction:block
+                                      leftButtonAction:nil
                                        log:@"Track warning alert"];
   return alert;
 }
@@ -365,6 +398,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:@"Info Alert"];
 }
 
@@ -374,6 +408,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"button_convert")
                      leftButtonTitle:L(@"cancel")
                    rightButtonAction:okBlock
+                    leftButtonAction:nil
                      log:nil];
 }
 
@@ -396,6 +431,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                     rightButtonTitle:L(@"ok")
                      leftButtonTitle:nil
                    rightButtonAction:nil
+                    leftButtonAction:nil
                      log:nil];
 }
 
@@ -405,6 +441,7 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                                       rightButtonTitle:L(@"downloader_retry")
                                        leftButtonTitle:L(@"cancel")
                                      rightButtonAction:okBlock
+                                      leftButtonAction:nil
                                        log:nil];
   alert.leftButtonAction = cancelBlock;
   [alert setNeedsCloseAlertAfterEnterBackground];
@@ -415,7 +452,8 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
                               message:(NSString *)message
                      rightButtonTitle:(NSString *)rightButtonTitle
                       leftButtonTitle:(NSString *)leftButtonTitle
-                    rightButtonAction:(MWMVoidBlock)action
+                    rightButtonAction:(MWMVoidBlock)rightButtonAction
+                     leftButtonAction:(MWMVoidBlock)leftButtonAction
                                   log:(NSString *)log {
   if (log) {
     LOG(LINFO, ([log UTF8String]));
@@ -431,7 +469,8 @@ static NSString *const kDefaultAlertNibName = @"MWMDefaultAlert";
   [alert.rightButton setTitle:rightButtonTitle forState:UIControlStateNormal];
   [alert.rightButton setTitle:rightButtonTitle forState:UIControlStateDisabled];
 
-  alert.rightButtonAction = action;
+  alert.leftButtonAction = leftButtonAction;
+  alert.rightButtonAction = rightButtonAction;
   if (leftButtonTitle) {
     [alert.leftButton setTitle:leftButtonTitle forState:UIControlStateNormal];
     [alert.leftButton setTitle:leftButtonTitle forState:UIControlStateDisabled];

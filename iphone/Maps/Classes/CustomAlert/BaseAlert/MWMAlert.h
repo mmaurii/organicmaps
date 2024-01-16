@@ -46,7 +46,8 @@
                             message:(NSString *)message
                    rightButtonTitle:(NSString *)rightButtonTitle
                     leftButtonTitle:(NSString *)leftButtonTitle
-                  rightButtonAction:(MWMVoidBlock)action;
+                  rightButtonAction:(MWMVoidBlock)rightButtonAction
+                   leftButtonAction:(MWMVoidBlock)leftButtonAction;
 
 - (void)close:(MWMVoidBlock)completion;
 

@@ -223,12 +223,14 @@ static NSString *const kAlertControllerNibIdentifier = @"MWMAlertViewController"
                              message:(nullable NSString *)message
                     rightButtonTitle:(nonnull NSString *)rightButtonTitle
                      leftButtonTitle:(nullable NSString *)leftButtonTitle
-                   rightButtonAction:(nullable MWMVoidBlock)action {
+                   rightButtonAction:(nullable MWMVoidBlock)rightButtonAction
+                   leftButtonAction:(nullable MWMVoidBlock)leftButtonAction {
   [self displayAlert:[MWMAlert defaultAlertWithTitle:title
                                              message:message
                                     rightButtonTitle:rightButtonTitle
                                      leftButtonTitle:leftButtonTitle
-                                   rightButtonAction:action]];
+                                   rightButtonAction:rightButtonAction
+                                    leftButtonAction:leftButtonAction]];
 }
 
 - (void)displayAlert:(MWMAlert *)alert {
