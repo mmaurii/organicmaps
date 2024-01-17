@@ -443,6 +443,29 @@ void setShowLocationAlert(BOOL needShow) {
     [self processLocationStatus:MWMLocationStatusDenied];
 }
 
+- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status 
+{
+  switch (status) {
+    case kCLAuthorizationStatusAuthorizedWhenInUse:
+    case kCLAuthorizationStatusAuthorizedAlways:
+      [self startUpdatingLocationFor:manager];
+      [self processLocationStatus:MWMLocationStatusNoError];
+      break;
+    case kCLAuthorizationStatusNotDetermined:
+      [self requestPermissionIfNeededFor:manager];
+      break;
+    case kCLAuthorizationStatusRestricted:
+    case kCLAuthorizationStatusDenied:
+      if ([CLLocationManager locationServicesEnabled]) {
+        [self processLocationStatus:MWMLocationStatusDenied];
+      } else {
+        [self processLocationStatus:MWMLocationStatusGPSIsOff];
+      }
+      
+      break;
+  }
+}
+
 #pragma mark - Start / Stop
 
 - (void)setStarted:(BOOL)started
@@ -469,43 +492,27 @@ void setShowLocationAlert(BOOL needShow) {
   }
 }
 
+- (void)requestPermissionIfNeededFor:(CLLocationManager *)manager
+{
+  [manager requestWhenInUseAuthorization];
+  setPermissionRequested();
+}
+
+- (void)startUpdatingLocationFor:(CLLocationManager *)manager
+{
+  [self requestPermissionIfNeededFor:manager];
+  
+  LOG(LINFO, ("startUpdatingLocation"));
+  
+  [manager startUpdatingLocation];
+  if ([CLLocationManager headingAvailable])
+    [manager startUpdatingHeading];
+}
+
 - (BOOL)start
 {
-  MWMVoidBlock doStart = ^{
-    LOG(LINFO, ("startUpdatingLocation"));
-
-    CLLocationManager * locationManager = self.locationManager;
-    if ([locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)])
-      [locationManager requestWhenInUseAuthorization];
-
-    [locationManager startUpdatingLocation];
-
-    setPermissionRequested();
-
-    if ([CLLocationManager headingAvailable])
-      [locationManager startUpdatingHeading];
-  };
-
-  if ([CLLocationManager locationServicesEnabled])
-  {
-    switch ([CLLocationManager authorizationStatus])
-    {
-    case kCLAuthorizationStatusAuthorizedWhenInUse:
-    case kCLAuthorizationStatusAuthorizedAlways:
-    case kCLAuthorizationStatusNotDetermined:
-        doStart();
-        return YES;
-    case kCLAuthorizationStatusRestricted:
-    case kCLAuthorizationStatusDenied:
-        [self processLocationStatus:MWMLocationStatusDenied];
-        break;
-    }
-  }
-  else
-  {
-    [self processLocationStatus:MWMLocationStatusGPSIsOff];
-  }
-  return NO;
+  [self locationManager];
+  return [CLLocationManager locationServicesEnabled];
 }
 
 - (void)stop
