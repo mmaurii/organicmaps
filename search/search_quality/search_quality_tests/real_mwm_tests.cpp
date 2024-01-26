@@ -233,13 +233,14 @@ UNIT_CLASS_TEST(MwmTestsFixture, NY_Subway)
 
   auto request = MakeRequest("subway");
   auto const & results = request->Results();
-  TEST_GREATER(results.size(), kTopPoiResultsCount, ());
+  TEST_GREATER(results.size(), kPopularPoiResultsCount, ());
 
-  /// @todo We are _completely_ missing actual metro in the list with "subway" or even "metro" query.
-  // Fast food "Subways" should be the first.
-  Range const range(results);
-  EqualClassifType(range, GetClassifTypes({{"amenity", "fast_food"}}));
-  TEST_LESS(SortedByDistance(range, center).first, 1000, ());
+  /// @todo First result is building-train_station with 'subway' in name;
+  // - 2 nearby 'subway' fast-foods;
+  // - railway-station-subway sorted by distance;
+  TEST_EQUAL(CountClassifType(Range(results, 1, 3), classif().GetTypeByPath({"amenity", "fast_food"})), 2, ());
+  TEST_EQUAL(CountClassifType(Range(results, 3, 5), classif().GetTypeByPath({"railway", "station", "subway"})), 2, ());
+  TEST_LESS(SortedByDistance(Range(results, 3, kPopularPoiResultsCount), center).first, 1000, ());
 }
 
 // https://github.com/organicmaps/organicmaps/issues/3249
