@@ -409,7 +409,7 @@ public:
       info.m_commonTokensFactor = min(3, std::max(0, count - int(info.m_tokenRanges[info.m_type].Size())));
     }
 
-    res.SetRankingInfo(info);
+    res.SetRankingInfo(info, m_isViewportMode);
     if (m_params.m_useDebugInfo)
       res.m_dbgInfo = std::make_shared<RankingInfo>(std::move(info));
 
@@ -779,17 +779,29 @@ void Ranker::UpdateResults(bool lastUpdate)
 
   if (m_params.m_viewportSearch)
   {
-    // Heuristics to filter partially matched category trash in the viewport.
-    // https://github.com/organicmaps/organicmaps/issues/5251
-    auto it = partition(m_tentativeResults.begin(), m_tentativeResults.end(),
-                        [](RankerResult const & r) { return !r.IsPartialCategory(); });
+    // https://github.com/organicmaps/organicmaps/issues/5566
+    /// @todo https://github.com/organicmaps/organicmaps/issues/5251 Should review later
+    // https://github.com/organicmaps/organicmaps/issues/4325
+    // https://github.com/organicmaps/organicmaps/issues/4282
+    // https://github.com/organicmaps/organicmaps/issues/4190
+    // https://github.com/organicmaps/organicmaps/issues/3677
 
-    size_t const goodCount = distance(m_tentativeResults.begin(), it);
-    if (goodCount >= 10 || goodCount * 3 >= m_tentativeResults.size())
-      m_tentativeResults.erase(it, m_tentativeResults.end());
+    auto & resV = m_tentativeResults;
+    sort(resV.begin(), resV.end(), [](RankerResult const & r1, RankerResult const & r2)
+    {
+      return r1.GetLinearModelRank() > r2.GetLinearModelRank();
+    });
 
-    sort(m_tentativeResults.begin(), m_tentativeResults.end(),
-         base::LessBy(&RankerResult::GetDistanceToPivot));
+    auto const threshold = RankingInfo::GetLinearRankViewportThreshold();
+    for (size_t i = 1; i < resV.size(); ++i)
+    {
+      if (resV[0].GetLinearModelRank() - resV[i].GetLinearModelRank() > threshold)
+      {
+        LOG(LDEBUG, ("Removed", resV.size() - i, "viewport results."));
+        resV.erase(resV.begin() + i, resV.end());
+        break;
+      }
+    }
   }
   else
   {

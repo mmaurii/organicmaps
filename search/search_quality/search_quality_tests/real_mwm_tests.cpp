@@ -1119,6 +1119,31 @@ UNIT_CLASS_TEST(MwmTestsFixture, Pois_Rank)
     TEST_GREATER(results.size(), kTopPoiResultsCount, ());
     EqualClassifType(Range(results, 0, 1), GetClassifTypes({{"leisure", "park"}}));
   }
+
+  // https://github.com/organicmaps/organicmaps/issues/4291
+  {
+    // Greenville, SC
+    ms::LatLon const center(34.8513533, -82.3984875);
+    SetViewportAndLoadMaps(center);
+
+    auto request = MakeRequest("Greenville Hospital");
+    auto const & results = request->Results();
+    TEST_GREATER(results.size(), kTopPoiResultsCount, ());
+
+    // - First is an airport.
+    // - Bus stop in the middle.
+    uint32_t const hospitalType = classif().GetTypeByPath({"amenity", "hospital"});
+    size_t count = 0;
+    for (size_t i = 0; i < kTopPoiResultsCount; ++i)
+    {
+      if (results[i].GetFeatureType() == hospitalType)
+      {
+        ++count;
+        TEST(results[i].GetString().find("Greenville") != std::string::npos, ());
+      }
+    }
+    TEST_GREATER(count, 2, ());
+  }
 }
 
 // "San Francisco" is always an interesting query, because in Latin America there are:
