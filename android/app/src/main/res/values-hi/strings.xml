@@ -80,6 +80,10 @@
 	<string name="water">जल</string>
 	<!-- Search category for RV facilities; any changes should be duplicated in categories.txt @rv! -->
 	<string name="rv">आरवी सुविधाएं</string>
+	<!-- Failed to recognize the format of a bookmark file. -->
+	<string name="unknown_file_type">फ़ाइल प्रकार ऐप द्वारा पहचाना नहीं गया है:\n%1$s</string>
+	<!-- Failed to download a bookmark file. -->
+	<string name="failed_to_download_file">फ़ाइल डाउनलोड करने में विफल %1$s\n\n%2$s</string>
 	<!-- Share button text which opens menu with more buttons, like Message, EMail, Facebook etc. -->
 	<string name="share">साझा करें</string>
 	<string name="share_my_location">मेरा स्थान साझा करें</string>

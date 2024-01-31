@@ -158,6 +158,10 @@
 	<string name="load_kmz_successful">Záložky boli úspešne načítané! Môžete ich nájst na mape alebo na obrazovke Správca záložiek.</string>
 	<!-- Kml file loading failed -->
 	<string name="load_kmz_failed">Načítavanie záložiek sa nepodarilo. Súbor môže byť poškodený alebo chybný.</string>
+	<!-- Failed to recognize the format of a bookmark file. -->
+	<string name="unknown_file_type">Aplikácia nerozpoznáva typ súboru:\n%1$s</string>
+	<!-- Failed to download a bookmark file. -->
+	<string name="failed_to_download_file">Nepodarilo sa stiahnuť súbor %1$s\n\n%2$s</string>
 	<!-- resource for context menu -->
 	<string name="edit">Upraviť</string>
 	<!-- Warning message when doing search around current position -->

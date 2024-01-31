@@ -161,6 +161,10 @@
 	<string name="load_kmz_successful">Отметките са заредени успешно! Можете да ги откриете на картата или при секцията с отметки.</string>
 	<!-- Kml file loading failed -->
 	<string name="load_kmz_failed">Качването на отметките се провали. Файлът може да бъде повреден или дефектен.</string>
+	<!-- Failed to recognize the format of a bookmark file. -->
+	<string name="unknown_file_type">Типът на файла не се разпознава от приложението:\n%1$s</string>
+	<!-- Failed to download a bookmark file. -->
+	<string name="failed_to_download_file">Неуспешно изтегляне на файл %1$s\n\n%2$s</string>
 	<!-- resource for context menu -->
 	<string name="edit">Редакция</string>
 	<!-- Warning message when doing search around current position -->

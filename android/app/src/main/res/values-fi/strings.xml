@@ -173,6 +173,10 @@
 	<string name="load_kmz_successful">Kirjanmerkkien lataaminen onnistui! Löydät ne joko kartalta tai kirjanmerkkien hallinnasta.</string>
 	<!-- Kml file loading failed -->
 	<string name="load_kmz_failed">Kirjanmerkkien lataus epäonnistui. Tiedosto saattaa olla vioittunut.</string>
+	<!-- Failed to recognize the format of a bookmark file. -->
+	<string name="unknown_file_type">Sovellus ei tunnista tiedostotyyppiä:\n%1$s</string>
+	<!-- Failed to download a bookmark file. -->
+	<string name="failed_to_download_file">Tiedoston lataaminen epäonnistui %1$s\n\n%2$s</string>
 	<!-- resource for context menu -->
 	<string name="edit">Muokkaa</string>
 	<!-- Warning message when doing search around current position -->
