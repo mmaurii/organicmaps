@@ -5542,7 +5542,7 @@
     hi = यदि आपको अभी आवाज नहीं सुनाई देती है तो वॉल्यूम या सिस्टम टेक्स्ट-टू-स्पीच सेटिंग्स की जांच करें।
     hu = Ellenőrizze a hangerőt vagy a rendszer szöveg-beszéd beállításait, ha most nem hallja a hangot.
     id = Periksa pengaturan volume atau pengaturan teks-ke-ucapan sistem jika anda tidak mendengar suara sekarang.
-    it = Controlla il volume o le impostazioni del sistema di sintesi vocale se ora non senti la voce.
+    it = Controlla il volume o le impostazioni del volume se ora non senti la voce.
     ja = 音声が聞こえない場合は、音量またはシステムの音声合成設定を確認する。
     ko = 지금 음성이 들리지 않으면 볼륨 또는 시스템 텍스트 음성 변환 설정을 확인하세요.
     mr = तुम्हाला आता आवाज ऐकू येत नसल्यास व्हॉल्यूम किंवा सिस्टम टेक्स्ट-टू-स्पीच सेटिंग्ज तपासा.
@@ -6213,7 +6213,7 @@
     hi = समाचार
     hu = Újdonságok
     id = Berita
-    it = Notizia
+    it = News
     ja = ニュース
     ko = 소식
     lt = Naujienos
@@ -6361,7 +6361,7 @@
     he = דרגו את האפליקציה
     hu = Értékeld az alkalmazást
     id = Beri nilai aplikasi
-    it = Vota l'app
+    it = Valuta l'app
     ja = アプリを評価
     ko = 앱 평가
     lt = Įvertinkite programėlę
@@ -6496,7 +6496,7 @@
     hi = दान देना
     hu = Adományozni
     id = Menyumbangkan
-    it = Donare
+    it = Dona
     ja = 寄付
     ko = 기부
     lt = Aukoti
@@ -6719,7 +6719,7 @@
     he = שגיאה בשליחת דוא"ל
     hu = Hiba az email küldése során
     id = Gangguan pengiriman surel
-    it = Errore invio e-mail
+    it = Errore nell'inviare l'e-mail
     ja = メール送信エラー
     ko = 메일 전송 중 오류
     lt = Klaida siunčiant laišką
